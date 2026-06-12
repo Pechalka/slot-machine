@@ -4,11 +4,11 @@ const app = express();
 
 // Символы и их веса (чем больше вес, тем чаще выпадает)
 const symbols = [
-  { name: 'cherry', value: 10, weight: 4 },    // вишня
-  { name: 'lemon',  value: 20, weight: 3 },    // лимон
-  { name: 'orange', value: 30, weight: 2 },    // апельсин
-  { name: 'bell',   value: 50, weight: 1 },    // колокол
-  { name: 'seven',  value: 100, weight: 1 }    // семёрка
+  { name: 'cherry', value: 10, weight: 4 }, // вишня
+  { name: 'lemon', value: 20, weight: 3 }, // лимон
+  { name: 'orange', value: 30, weight: 2 }, // апельсин
+  { name: 'bell', value: 50, weight: 1 }, // колокол
+  { name: 'seven', value: 100, weight: 1 }, // семёрка
 ];
 
 // Генерация случайного символа с учётом весов
@@ -34,12 +34,14 @@ function calculateWin(reels) {
 
 // Эндпоинт вращения
 app.get('/api/spin', (req, res) => {
-  const reels = [ getRandomSymbol(), getRandomSymbol(), getRandomSymbol() ];
+  const reels = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
   const winAmount = calculateWin(reels);
   res.json({
-    reels: reels.map(s => s.name),
-    win: winAmount
+    reels: reels.map((s) => s.name),
+    win: winAmount,
   });
+
+
 });
 
 app.get('/api/config', (req, res) => {
@@ -50,9 +52,8 @@ app.get('/api/config', (req, res) => {
       lemon: 3,
       orange: 2,
       bell: 1,
-      seven: 1
+      seven: 1,
     },
-
   };
   res.json(gameConfig);
 });

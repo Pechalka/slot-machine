@@ -1,53 +1,52 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    background: #0a0a2a;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-family: Arial, sans-serif;
+  background: #0a0a2a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: Arial, sans-serif;
 }
 
 /* Сообщение прижато к верху */
 .win-message {
-    width: 100%;
-    text-align: center;
-    font-size: 28px;
-    font-weight: bold;
-    color: gold;
-    background: rgba(0,0,0,0.7);
-    padding: 12px 0;
-    margin: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  color: gold;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 12px 0;
+  margin: 0;
 }
 
 /* Контейнер для канваса — без отступов, центрирование по горизонтали */
 .game-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 0;          /* нет отступа от сообщения */
+  display: flex;
+  justify-content: center;
+  margin-top: 0; /* нет отступа от сообщения */
 }
 
-
 #pixi-canvas-wrapper {
-    border: 1px solid red;
+  border: 1px solid red;
 }
 
 /* Кнопка фиксирована снизу */
 #spin-btn {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 36px;
-    font-size: 24px;
-    background: gold;
-    border: none;
-    border-radius: 40px;
-    cursor: pointer;
-    z-index: 20;
-    font-weight: bold;
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 36px;
+  font-size: 24px;
+  background: gold;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  z-index: 20;
+  font-weight: bold;
 }

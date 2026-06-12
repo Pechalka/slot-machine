@@ -14,6 +14,9 @@ importers:
       vite:
         specifier: 7.0.4
         version: 7.0.4
+      xstate:
+        specifier: ^5.32.0
+        version: 5.32.0
 
 packages:
 
@@ -702,6 +705,9 @@ packages:
       yaml:
         optional: true
 
+  xstate@5.32.0:
+    resolution: {integrity: sha512-zsk73aWGmxn9z34P0kbiod5JwTvdYRW3+IDxITq8sd9+VWwMyW7BUzpplnYy9mIEXa6V8IMDv7Hy4m0mhT5+2Q==}
+
 snapshots:
 
   '@esbuild/aix-ppc64@0.25.12':
@@ -1283,3 +1289,5 @@ snapshots:
       tinyglobby: 0.2.16
     optionalDependencies:
       fsevents: 2.3.3
+
+  xstate@5.32.0: {}

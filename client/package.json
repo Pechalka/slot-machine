@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "pixi.js": "^7.4.3",
-    "vite": "7.0.4"
+    "vite": "7.0.4",
+    "xstate": "^5.32.0"
   }
 }
