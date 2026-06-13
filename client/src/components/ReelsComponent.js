@@ -1,9 +1,9 @@
-// game.js
+// components/ReelsComponent.js
 import { Reel } from './Reel.js';
-import { generateVisualStripFromWeights, REEL_WIDTH, SYMBOL_SIZE, VISIBLE_SYMBOLS, createEmojiTexture } from './utils.js';
-import { onState, onField } from './xstate-subscribers.js';
+import { generateVisualStripFromWeights, REEL_WIDTH, SYMBOL_SIZE, VISIBLE_SYMBOLS, createEmojiTexture } from '../utils.js';
+import { onState, onField } from '../xstate-subscribers.js';
 
-export function createBoard(actor, app) {
+export function createReelsComponent(actor, app) {
   let reels = [];
   let unsubscribers = [];
 
@@ -17,7 +17,7 @@ export function createBoard(actor, app) {
   }
 
   function createReels(config) {
-    const { symbolWeights, reelsCount = 3, symbols = ['cherry','lemon','orange','bell','seven'] } = config;
+    const { symbolWeights, reelsCount = 5, symbols = ['cherry','lemon','orange','bell','seven'] } = config;
     const textures = {};
     for (const sym of symbols) {
       textures[sym] = createEmojiTexture(app, sym);
@@ -39,19 +39,16 @@ export function createBoard(actor, app) {
   }
 
   function setupSubscriptions() {
-    // При загрузке конфига создаём барабаны
     unsubscribers.push(onField(actor, 'config', (ctx) => {
       if (ctx.config && reels.length === 0) {
         createReels(ctx.config);
       }
     }));
 
-    // При входе в spinning – запускаем вращение
     unsubscribers.push(onState(actor, 'spinning', () => {
       reels.forEach(reel => reel.startSpin());
     }));
 
-    // При входе в stoppingReels – останавливаем на нужных символах
     unsubscribers.push(onState(actor, 'stoppingReels', (ctx) => {
       if (ctx.spinResult?.reels) {
         reels.forEach((reel, idx) => {
@@ -67,7 +64,11 @@ export function createBoard(actor, app) {
 
   function destroy() {
     unsubscribers.forEach(unsub => unsub.unsubscribe?.());
-    // дополнительная очистка ticker и reels
+    // Дополнительная очистка: убрать тикер, удалить спрайты
+    reels.forEach(reel => {
+      reel.container.destroy({ children: true });
+    });
+    reels = [];
   }
 
   return { init, destroy };

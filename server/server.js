@@ -34,7 +34,7 @@ function calculateWin(reels) {
 
 // Эндпоинт вращения
 app.get('/api/spin', (req, res) => {
-  const reels = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
+  const reels = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
   const winAmount = calculateWin(reels);
   res.json({
     reels: reels.map((s) => s.name),
