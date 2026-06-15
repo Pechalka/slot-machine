@@ -1,7 +1,15 @@
 // components/ReelsComponent.js
+import * as PIXI from 'pixi.js';
 import { Reel } from './Reel.js';
-import { generateVisualStripFromWeights, REEL_WIDTH, SYMBOL_SIZE, VISIBLE_SYMBOLS, createEmojiTexture } from '../utils.js';
+import {
+  generateVisualStripFromWeights,
+  REEL_WIDTH,
+  SYMBOL_SIZE,
+  VISIBLE_SYMBOLS,
+} from '../utils.js';
 import { onState, onField } from '../xstate-subscribers.js';
+import { createSpineSymbol } from '../spineLoader.js';
+
 
 export function createReelsComponent(actor, app) {
   let reels = [];
@@ -17,15 +25,19 @@ export function createReelsComponent(actor, app) {
   }
 
   function createReels(config) {
-    const { symbolWeights, reelsCount = 5, symbols = ['cherry','lemon','orange','bell','seven'] } = config;
-    const textures = {};
-    for (const sym of symbols) {
-      textures[sym] = createEmojiTexture(app, sym);
-    }
+    const {
+      symbolWeights,
+      reelsCount = 5,
+    } = config;
+
+    const createSumbol = (sym) => {
+      // return createSpineSymbol(sym);
+      return new PIXI.Sprite(PIXI.Assets.get(sym));
+    };
 
     for (let i = 0; i < reelsCount; i++) {
       const visualStrip = generateVisualStripFromWeights(symbolWeights);
-      const reel = new Reel(app, 0, 0, textures, visualStrip, 4);
+      const reel = new Reel(app, 0, 0, createSumbol, visualStrip, 4);
       reel.onStopped = () => {
         actor.send({ type: 'REEL_STOPPED' });
       };
@@ -39,23 +51,29 @@ export function createReelsComponent(actor, app) {
   }
 
   function setupSubscriptions() {
-    unsubscribers.push(onField(actor, 'config', (ctx) => {
-      if (ctx.config && reels.length === 0) {
-        createReels(ctx.config);
-      }
-    }));
+    unsubscribers.push(
+      onField(actor, 'config', (ctx) => {
+        if (ctx.config && reels.length === 0) {
+          createReels(ctx.config);
+        }
+      })
+    );
 
-    unsubscribers.push(onState(actor, 'spinning', () => {
-      reels.forEach(reel => reel.startSpin());
-    }));
+    unsubscribers.push(
+      onState(actor, 'spinning', () => {
+        reels.forEach((reel) => reel.startSpin());
+      })
+    );
 
-    unsubscribers.push(onState(actor, 'stoppingReels', (ctx) => {
-      if (ctx.spinResult?.reels) {
-        reels.forEach((reel, idx) => {
-          reel.stopAtSymbol(ctx.spinResult.reels[idx]);
-        });
-      }
-    }));
+    unsubscribers.push(
+      onState(actor, 'stoppingReels', (ctx) => {
+        if (ctx.spinResult?.reels) {
+          reels.forEach((reel, idx) => {
+            reel.stopAtSymbol(ctx.spinResult.reels[idx]);
+          });
+        }
+      })
+    );
   }
 
   function init() {
@@ -63,9 +81,9 @@ export function createReelsComponent(actor, app) {
   }
 
   function destroy() {
-    unsubscribers.forEach(unsub => unsub.unsubscribe?.());
+    unsubscribers.forEach((unsub) => unsub.unsubscribe?.());
     // Дополнительная очистка: убрать тикер, удалить спрайты
-    reels.forEach(reel => {
+    reels.forEach((reel) => {
       reel.container.destroy({ children: true });
     });
     reels = [];

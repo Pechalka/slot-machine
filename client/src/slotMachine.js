@@ -1,7 +1,9 @@
 import { createMachine, assign, fromPromise } from 'xstate';
+import { loadSymbolsAssets } from './spineLoader.js';
 
 // Загрузка конфигурации с бэкенда
 async function loadConfig() {
+  await loadSymbolsAssets();
   const res = await fetch('/api/config');
   const config = await res.json();
   // config = { symbolWeights: { cherry:5, lemon:4, ... }, reelsCount: 3, symbols: [...] }

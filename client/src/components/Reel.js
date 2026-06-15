@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js';
 import { SYMBOL_SIZE, VISIBLE_SYMBOLS } from '../utils';
 
 export class Reel {
-  constructor(app, x, y, textures, strip, speed = 2) {
+  constructor(app, x, y, createSumbol, strip, speed = 2) {
     this.container = new PIXI.Container();
     this.container.x = x;
     this.container.y = y;
@@ -20,7 +20,7 @@ export class Reel {
     // Создаём ленту из символов
     for (let i = 0; i < this.stripSize; i++) {
       const sym = this.strip[i];
-      const sprite = new PIXI.Sprite(textures[sym]);
+      const sprite = createSumbol(sym);
       sprite.width = SYMBOL_SIZE;
       sprite.height = SYMBOL_SIZE;
       sprite.y = i * SYMBOL_SIZE;

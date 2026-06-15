@@ -46,6 +46,7 @@ app.get('/api/spin', (req, res) => {
 
 app.get('/api/config', (req, res) => {
   const gameConfig = {
+    reelsCount: 5,
     // Таблица весов символов (сумма весов = 11)
     symbolWeights: {
       cherry: 4,
