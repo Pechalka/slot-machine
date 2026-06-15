@@ -128,6 +128,22 @@ export class Reel {
     this._syncPositions();
   }
 
+  getCenterSymbolIndex() {
+    const centerIndex = Math.floor(VISIBLE_SYMBOLS / 2);        // номер видимого слота (0,1,2)
+    const totalHeight = this.stripSize * SYMBOL_SIZE;
+    const rawPos = (this.position + centerIndex * SYMBOL_SIZE) % totalHeight;
+    return Math.floor(rawPos / SYMBOL_SIZE) % this.stripSize;   // индекс в ленте
+  }
+
+  playWinOnCenter(animationName) {
+    const centerIndex = this.getCenterSymbolIndex();
+    if (centerIndex >= this.sprites.length) return;
+    const centerSprite = this.sprites[centerIndex];
+    if (centerSprite && centerSprite.state) {
+      centerSprite.state.setAnimation(0, animationName, false);
+    }
+  }
+
   _syncPositions() {
     const maxY = this.stripSize * SYMBOL_SIZE;
     for (let i = 0; i < this.sprites.length; i++) {

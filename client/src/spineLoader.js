@@ -30,6 +30,7 @@ export function createSpineSymbol(sym) {
   spine.position.set(100, 100);
   spine.pivot.set(spine.width / 2, spine.height / 2);
   spine.scale.set(0.1);
+  spine.state.setAnimation(0, symbolName + '_static', false);
 
   return spine;
 }
