@@ -1,8 +1,9 @@
-import { Assets } from 'pixi.js';
+import { Assets, Container, Sprite } from 'pixi.js';
 import * as SPINE_PIXI from '@esotericsoftware/spine-pixi-v7';
-import { createEmojiTexture } from './utils.js';
+import { createEmojiTexture, SYMBOL_SIZE } from './utils.js';
 
-export const symbols = ['h1', 'h2', 'h3', 'h4', 'h5', 'l1', 'l2', 'l3', 'l4'];
+// 'l3',
+export const symbols = ['h1', 'h2', 'h3', 'h4', 'h5', 'l1', 'l2', 'l4'];
 
 export async function loadSymbolsAssets() {
   for (let n = 0; n < symbols.length; n++) {
@@ -15,29 +16,52 @@ export async function loadSymbolsAssets() {
   return await Assets.load([...symbols, 'atlas']);
 }
 
-export function createSpineSymbol(sym) {
-  const spines = {
-    cherry: 'h1',
-    lemon: 'h2',
-    orange: 'h3',
-    bell: 'h4',
-    seven: 'h5',
-  };
-  const symbolName = spines[sym];
+// export function createSpineSymbol(symbolName) {
+//   const spine = SPINE_PIXI.Spine.from({ skeleton: symbolName, atlas: 'atlas', scale: 0.5 });
 
+//   spine.position.set(100, 100);
+//   spine.pivot.set(spine.width / 2, spine.height / 2);
+//   spine.scale.set(0.1);
+//   spine.state.setAnimation(0, symbolName + '_static', false);
+
+//   return spine;
+// }
+
+export function createSpineSymbol(symbolName) {
+  // Создаём Spine
   const spine = SPINE_PIXI.Spine.from({ skeleton: symbolName, atlas: 'atlas', scale: 0.5 });
-
-  spine.position.set(100, 100);
-  spine.pivot.set(spine.width / 2, spine.height / 2);
+  // Масштабируем под размер ячейки (подбери свой коэффициент)
   spine.scale.set(0.1);
-  spine.state.setAnimation(0, symbolName + '_static', false);
+  spine.position.set(spine.width / 2, spine.height / 2);
 
-  return spine;
+  // Создаём контейнер-обёртку размером SYMBOL_SIZE
+  const wrapper = new Container();
+  wrapper.width = SYMBOL_SIZE;
+  wrapper.height = SYMBOL_SIZE;
+
+  wrapper.addChild(spine);
+  const animName = `${symbolName}_static`;
+  spine.state.setAnimation(0, animName, true);
+
+  wrapper.playWin = () => {
+    spine.state.setAnimation(0, symbolName, true);
+  }
+
+  return wrapper;
+}
+
+export function createTextureSymbol(symbolName) {
+  const texture = new Sprite(Assets.get(symbolName + '_emoji'));
+
+  texture.playWin = () => {
+    console.log(' playWin ', symbolName)
+  }
+
+  return texture;
 }
 
 export async function generateSymbolTextures(app) {
-  const symbols = ['cherry', 'lemon', 'orange', 'bell', 'seven'];
   for (const sym of symbols) {
-    Assets.cache.set(sym, createEmojiTexture(app, sym));
+    Assets.cache.set(sym + '_emoji', createEmojiTexture(app, sym));
   }
 }

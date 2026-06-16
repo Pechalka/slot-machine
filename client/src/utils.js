@@ -23,23 +23,30 @@ export function generateVisualStripFromWeights(weights, repeats = 1) {
 }
 
 export const colors = {
-  cherry: 0xe34234,
-  lemon: 0xfff44f,
-  orange: 0xffa500,
-  bell: 0xc0c0c0,
-  seven: 0x8b0000,
+  h1: 0xe34234,
+  h2: 0xfff44f,
+  h3: 0xffa500,
+  h4: 0xc0c0c0,
+  l1: 0x8b0000,
+  l2: 0x8b0000,
+  l4: 0x8b0000,
 };
 
 export const SYMBOL_SIZE = 100;
 export const VISIBLE_SYMBOLS = 3;
 export const REEL_WIDTH = 120;
 
+  // h3: '3️⃣',
+  // h4: '4️⃣',
 export const SYMBOL_EMOJI = {
-  cherry: '🍒',
-  lemon: '🍋',
-  orange: '🍊',
-  bell: '🔔',
-  seven: '7️⃣',
+  h1: '🍒',
+  h2: '🍋',
+  h3: '🍊',
+  h4: '🔔',
+  l1: '1️⃣',
+  l2: '2️⃣',
+  // l3
+  l4: '4️⃣',
 };
 
 export function createEmojiTexture(app, name) {

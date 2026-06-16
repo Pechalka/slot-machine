@@ -8,7 +8,7 @@ import {
   VISIBLE_SYMBOLS,
 } from '../utils.js';
 import { onState, onField } from '../xstate-subscribers.js';
-import { createSpineSymbol } from '../spineLoader.js';
+import { createSpineSymbol, createTextureSymbol } from '../spineLoader.js';
 
 export function createReelsComponent(actor, app) {
   let reels = [];
@@ -24,16 +24,17 @@ export function createReelsComponent(actor, app) {
   }
 
   function createReels(config) {
-    const { symbolWeights, reelsCount = 5 } = config;
+    const reelsData = config.reels;
+    const reelsCount = reelsData.length;
 
     const createSumbol = (sym) => {
       return createSpineSymbol(sym);
-      // return new PIXI.Sprite(PIXI.Assets.get(sym));
+      // return new PIXI.Sprite(PIXI.Assets.get(sym + '_emoji'));
+      // return createTextureSymbol(sym);
     };
 
     for (let i = 0; i < reelsCount; i++) {
-      const visualStrip = generateVisualStripFromWeights(symbolWeights);
-      const reel = new Reel(app, 0, 0, createSumbol, visualStrip, 4);
+      const reel = new Reel(app, 0, 0, createSumbol, reelsData[i], 4);
       reel.onStopped = () => {
         actor.send({ type: 'REEL_STOPPED' });
       };
@@ -75,19 +76,9 @@ export function createReelsComponent(actor, app) {
       onState(actor, 'idle', (ctx) => {
         if (ctx.spinResult?.reels) {
 
-          const symbolToSpine = {
-            cherry: 'h1',
-            lemon: 'h2',
-            orange: 'h3',
-            bell: 'h4',
-            seven: 'h5',
-          };
           reels.forEach((reel, idx) => {
             const symbol = ctx.spinResult.reels[idx];
-            const animName = symbolToSpine[symbol];
-            if (animName) {
-              reel.playWinOnCenter(animName);
-            }
+            reel.playWinOnCenter(symbol);
           });
         }
       })

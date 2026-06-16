@@ -1,9 +1,7 @@
 import { createMachine, assign, fromPromise } from 'xstate';
-import { loadSymbolsAssets } from './spineLoader.js';
 
 // Загрузка конфигурации с бэкенда
 async function loadConfig() {
-  await loadSymbolsAssets();
   const res = await fetch('/api/config');
   const config = await res.json();
   // config = { symbolWeights: { cherry:5, lemon:4, ... }, reelsCount: 3, symbols: [...] }
@@ -76,7 +74,7 @@ export const slotMachine = createMachine({
   },
   guards: {
     canStop: ({ context }) => context.spinResult !== null && context.timerFinished === true,
-    allReelsStopped: ({ context }) => context.stoppedReelsCount === (context.config?.reelsCount || 3)
+    allReelsStopped: ({ context }) => context.stoppedReelsCount === (context.config?.reels.length )
   },
   actors: {
     loadConfig: fromPromise(loadConfig),

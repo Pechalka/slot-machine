@@ -129,18 +129,31 @@ export class Reel {
   }
 
   getCenterSymbolIndex() {
-    const centerIndex = Math.floor(VISIBLE_SYMBOLS / 2);        // номер видимого слота (0,1,2)
+    const centerIndex = Math.floor(VISIBLE_SYMBOLS / 2); // номер видимого слота (0,1,2)
     const totalHeight = this.stripSize * SYMBOL_SIZE;
     const rawPos = (this.position + centerIndex * SYMBOL_SIZE) % totalHeight;
-    return Math.floor(rawPos / SYMBOL_SIZE) % this.stripSize;   // индекс в ленте
+    return Math.floor(rawPos / SYMBOL_SIZE) % this.stripSize; // индекс в ленте
   }
 
   playWinOnCenter(animationName) {
-    const centerIndex = this.getCenterSymbolIndex();
-    if (centerIndex >= this.sprites.length) return;
-    const centerSprite = this.sprites[centerIndex];
-    if (centerSprite && centerSprite.state) {
-      centerSprite.state.setAnimation(0, animationName, false);
+    const centerSlot = Math.floor(VISIBLE_SYMBOLS / 2);
+    const centerY = centerSlot * SYMBOL_SIZE;
+    const totalHeight = this.stripSize * SYMBOL_SIZE;
+
+    let targetSprite = null;
+    for (let i = 0; i < this.sprites.length; i++) {
+      const sprite = this.sprites[i];
+      let y = sprite.y;
+      y = ((y % totalHeight) + totalHeight) % totalHeight;
+      if (y >= centerY && y < centerY + SYMBOL_SIZE) {
+        targetSprite = sprite;
+        break;
+      }
+    }
+
+    if (targetSprite && targetSprite.playWin) {
+      // targetSprite.state.setAnimation(0, animationName, false);
+      targetSprite.playWin();
     }
   }
 
