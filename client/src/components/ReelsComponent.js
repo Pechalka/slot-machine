@@ -64,23 +64,49 @@ export function createReelsComponent(actor, app) {
 
     unsubscribers.push(
       onState(actor, 'stoppingReels', (ctx) => {
-        if (ctx.spinResult?.reels) {
+        const { positions } = ctx.spinResult;
+        if (positions) {
           reels.forEach((reel, idx) => {
-            reel.stopAtSymbol(ctx.spinResult.reels[idx]);
+            // reel.stopAtSymbol(ctx.spinResult.reels[idx]);
+            reel.stopAtPosition(positions[idx]);
           });
         }
       })
     );
 
-    unsubscribers.push(
-      onState(actor, 'idle', (ctx) => {
-        if (ctx.spinResult?.reels) {
+    // unsubscribers.push(
+    //   onState(actor, 'winAnimation', (ctx) => {
+    //     if (ctx.spinResult?.reels) {
 
-          reels.forEach((reel, idx) => {
-            const symbol = ctx.spinResult.reels[idx];
-            reel.playWinOnCenter(symbol);
+    //       const promises = reels.map((reel, idx) => {
+    //         const symbol = ctx.spinResult.reels[idx];
+    //         return reel.playWinOnCenter(symbol);
+    //       });
+
+    //       Promise.all(promises).then(() => {
+    //         actor.send({ type: 'ANIMATION_END' })
+    //       });
+    //     }
+    //   })
+    // );
+    unsubscribers.push(
+      onState(actor, 'winAnimation', async (ctx) => {
+        if (ctx.spinResult?.winningLines) {
+          const promises = [];
+
+          ctx.spinResult.winningLines.forEach((line) => {
+            line.positions.forEach(([row, col]) => {
+              const reel = reels[col];
+              console.log('row ', row);
+//              const symbolName = ctx.spinResult.matrix[row][col];
+              promises.push(reel.playWinOnRow(row));
+            });
           });
+          Promise.all(promises).then(() => {
+            actor.send({ type: 'ANIMATION_END' });
+          })
         }
+
       })
     );
   }

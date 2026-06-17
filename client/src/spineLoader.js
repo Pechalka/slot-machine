@@ -44,7 +44,18 @@ export function createSpineSymbol(symbolName) {
   spine.state.setAnimation(0, animName, true);
 
   wrapper.playWin = () => {
-    spine.state.setAnimation(0, symbolName, true);
+    return new Promise(resolve => {
+      const listeners = {
+        complete: () => {
+          spine.state.setAnimation(0, animName , false);
+          spine.state.removeListener(listeners);
+          resolve();
+        },
+      }
+
+      spine.state.addListener(listeners);
+      spine.state.setAnimation(0, symbolName, false);
+    });
   }
 
   return wrapper;
@@ -55,6 +66,8 @@ export function createTextureSymbol(symbolName) {
 
   texture.playWin = () => {
     console.log(' playWin ', symbolName)
+
+    return Promise.resolve();
   }
 
   return texture;

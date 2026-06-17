@@ -31,13 +31,6 @@ export const colors = {
   l2: 0x8b0000,
   l4: 0x8b0000,
 };
-
-export const SYMBOL_SIZE = 100;
-export const VISIBLE_SYMBOLS = 3;
-export const REEL_WIDTH = 120;
-
-  // h3: '3️⃣',
-  // h4: '4️⃣',
 export const SYMBOL_EMOJI = {
   h1: '🍒',
   h2: '🍋',
@@ -48,6 +41,12 @@ export const SYMBOL_EMOJI = {
   // l3
   l4: '4️⃣',
 };
+
+export const SYMBOL_SIZE = 100;
+export const VISIBLE_SYMBOLS = 3;
+export const REEL_WIDTH = 120;
+
+
 
 export function createEmojiTexture(app, name) {
   const padding = 5;
