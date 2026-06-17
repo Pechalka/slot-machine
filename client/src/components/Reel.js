@@ -2,6 +2,11 @@ import * as PIXI from 'pixi.js';
 
 import { SYMBOL_SIZE, VISIBLE_SYMBOLS } from '../utils';
 
+// TODO
+// генерировать не всю ленту а тока 5-7 елементов и двигать их
+// поменять позици
+// сделать одинаково для любой позиции
+
 export class Reel {
   constructor(app, x, y, createSumbol, strip, speed = 2) {
     this.container = new PIXI.Container();
@@ -116,6 +121,9 @@ export class Reel {
 
   playWinOnRow(row) {
     const totalHeight = this.stripSize * SYMBOL_SIZE;
+    const maxPos = totalHeight;
+    // Нормализуем позицию (без изменения update)
+    this.position = ((this.position % maxPos) + maxPos) % maxPos;
     const targetY = row * SYMBOL_SIZE;
     for (let i = 0; i < this.sprites.length; i++) {
       const symbol = this.sprites[i];
@@ -159,19 +167,16 @@ export class Reel {
     if (this.targetPosition !== null) {
       let diff = this.targetPosition - this.position;
 
-      // Если diff стал отрицательным – перешагнули, подправляем
       if (diff < 0 || Math.abs(diff) < 0.5) {
-        this.position = this.targetPosition;
+        const maxPos = this.stripSize * SYMBOL_SIZE;
+        this.position = ((this.targetPosition % maxPos) + maxPos) % maxPos; // <-- нормализация
         this.spinning = false;
         this.targetPosition = null;
         this._syncPositions();
-        // Вызываем колбэк остановки, если он задан
         if (this.onStopped) this.onStopped();
         return;
       }
-      // Замедление: чем меньше diff, тем сильнее снижаем скорость
-      // Но скорость не падает ниже 0.5 (чтобы не застревать)
-      // если мы близко замедляемся (половина символа) инеаче скорость обычная
+
       let minSpeed = 0.5;
       let targetSpeed = Math.min(this.baseSpeed, diff / SYMBOL_SIZE + 0.5);
       this.speed = Math.max(minSpeed, targetSpeed, this.speed * 0.98);
@@ -180,7 +185,6 @@ export class Reel {
       this.position += step;
     } else {
       this.position += this.speed * delta;
-      // Нормализация для обычного вращения
       const maxPos = this.stripSize * SYMBOL_SIZE;
       if (this.position >= maxPos) this.position -= maxPos;
       if (this.position < 0) this.position += maxPos;
@@ -191,8 +195,9 @@ export class Reel {
 
   _syncPositions() {
     const maxY = this.stripSize * SYMBOL_SIZE;
+    const pos = ((this.position % maxY) + maxY) % maxY; // нормализация
     for (let i = 0; i < this.sprites.length; i++) {
-      let y = (i * SYMBOL_SIZE - this.position) % maxY;
+      let y = (i * SYMBOL_SIZE - pos) % maxY;
       if (y < -SYMBOL_SIZE) y += maxY;
       this.sprites[i].y = y;
     }

@@ -34,7 +34,7 @@ export function createReelsComponent(actor, app) {
     };
 
     for (let i = 0; i < reelsCount; i++) {
-      const reel = new Reel(app, 0, 0, createSumbol, reelsData[i], 4);
+      const reel = new Reel(app, 0, 0, createSumbol, reelsData[i], 10);
       reel.onStopped = () => {
         actor.send({ type: 'REEL_STOPPED' });
       };
@@ -92,21 +92,22 @@ export function createReelsComponent(actor, app) {
     unsubscribers.push(
       onState(actor, 'winAnimation', async (ctx) => {
         if (ctx.spinResult?.winningLines) {
-          const promises = [];
-
-          ctx.spinResult.winningLines.forEach((line) => {
-            line.positions.forEach(([row, col]) => {
+          // Проходим по каждой линии последовательно
+          for (const line of ctx.spinResult.winningLines) {
+            // Собираем промисы для всех позиций в этой линии
+            const linePromises = line.positions.map(([row, col]) => {
               const reel = reels[col];
-              console.log('row ', row);
-//              const symbolName = ctx.spinResult.matrix[row][col];
-              promises.push(reel.playWinOnRow(row));
+              const symbolName = ctx.spinResult.matrix[row][col];
+              return reel.playWinOnRow(row, symbolName);
             });
-          });
-          Promise.all(promises).then(() => {
-            actor.send({ type: 'ANIMATION_END' });
-          })
+            // Ждём завершения анимации для всех позиций в этой линии
+            await Promise.all(linePromises);
+            // Небольшая задержка между линиями (опционально, например, 300 мс)
+            await new Promise((resolve) => setTimeout(resolve, 300));
+          }
         }
-
+        // Все линии анимированы — отправляем событие
+        actor.send({ type: 'ANIMATION_END' });
       })
     );
   }

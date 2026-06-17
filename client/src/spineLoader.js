@@ -16,15 +16,12 @@ export async function loadSymbolsAssets() {
   return await Assets.load([...symbols, 'atlas']);
 }
 
-// export function createSpineSymbol(symbolName) {
-//   const spine = SPINE_PIXI.Spine.from({ skeleton: symbolName, atlas: 'atlas', scale: 0.5 });
 
-//   spine.position.set(100, 100);
-//   spine.pivot.set(spine.width / 2, spine.height / 2);
-//   spine.scale.set(0.1);
-//   spine.state.setAnimation(0, symbolName + '_static', false);
-
-//   return spine;
+// TODO добавить абстракцию Symbol
+// {
+//   display: { w, h}
+//   playWin = () => {}
+//   symbol
 // }
 
 export function createSpineSymbol(symbolName) {

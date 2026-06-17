@@ -1,6 +1,6 @@
 import { createMachine, assign, fromPromise } from 'xstate';
 
-import replay from './replay.json';
+import replay from './replay';
 
 // Загрузка конфигурации с бэкенда
 async function loadConfig() {
