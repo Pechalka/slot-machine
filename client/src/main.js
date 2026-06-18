@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { createActor } from 'xstate';
-import { slotMachine } from './slotMachine.js';
-import { createGame } from './game.js';
+import { slotMachine } from './slotMachine/machine.js';
+import { createGame } from './components/game.js';
 import { subscribeStates } from './xstate-subscribers.js';
 
 async function bootstrap() {
@@ -25,7 +25,18 @@ async function bootstrap() {
     const currentState = actor.getSnapshot().value;
     console.log('Состояние:', currentState);
     console.log('Контекст:', context);
-  })
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.code === 'Space') {
+      event.preventDefault(); // предотвращаем скролл страницы
+      const snapshot = actor.getSnapshot();
+      if (snapshot.matches('idle')) {
+        actor.send({ type: 'SPIN' });
+      }
+    }
+  });
+
 }
 
 bootstrap();

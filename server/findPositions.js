@@ -7,8 +7,8 @@ const { VISIBLE_SYMBOLS } = require('./config');
 // Массив условий: каждая строка требует, чтобы на указанной строке (row)
 // первые count символов были равны symbol
 const targets = [
-  { row: 1, count: 3, symbol: 'l4' },  // центральная линия: 4 h4
-  { row: 2, count: 3, symbol: 'l1' },  // нижняя линия: 3 l1
+  { row: 1, count: 4, symbol: 'S' },  // центральная линия: 4 h4
+  // { row: 2, count: 3, symbol: 'l2' },  // нижняя линия: 3 l1
 ];
 
 const maxAttempts = 50000; // количество попыток (увеличь, если не находит)

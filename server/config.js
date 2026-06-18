@@ -11,6 +11,7 @@ const symbolValues = {
 const symbolWeights = {
   h1: 1, h2: 2, h3: 3, h4: 4,
   l1: 5, l2: 6, l4: 8,
+  S: 1,
 };
 
 const PAYLINES = [

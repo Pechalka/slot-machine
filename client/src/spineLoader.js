@@ -11,8 +11,14 @@ export async function loadSymbolsAssets() {
     Assets.add(element, '/assets/spines/symbols/' + element + '.json');
   }
 
-  Assets.add('atlas', '/assets/spines/symbols/symbols.atlas');
+  // Assets.add('S', '/assets/spines/symbols2/S.json');
+  // Assets.add('M', '/assets/spines/symbols2/M.json');
 
+  Assets.add('atlas', '/assets/spines/symbols/symbols.atlas');
+  // Assets.add('atlas_scatter', '/assets/spines/symbols2/symbols2.atlas');
+
+
+  // return await Assets.load([...symbols, 'atlas', 'atlas_scatter', 'S', 'M']);
   return await Assets.load([...symbols, 'atlas']);
 }
 
@@ -24,9 +30,16 @@ export async function loadSymbolsAssets() {
 //   symbol
 // }
 
-export function createSpineSymbol(symbolName) {
-  // Создаём Spine
-  const spine = SPINE_PIXI.Spine.from({ skeleton: symbolName, atlas: 'atlas', scale: 0.5 });
+export function createSpineSymbol(_symbolName) {
+  let symbolName = _symbolName;
+
+  if (_symbolName == 'S') symbolName = 'h1';
+  if (_symbolName == 'h1') symbolName = 'h5';
+
+  let atlas = 'atlas';
+  let animName = `${symbolName}_static`;
+
+  const spine = SPINE_PIXI.Spine.from({ skeleton: symbolName, atlas, scale: 0.5 });
   // Масштабируем под размер ячейки (подбери свой коэффициент)
   spine.scale.set(0.1);
   spine.position.set(spine.width / 2, spine.height / 2);
@@ -37,7 +50,6 @@ export function createSpineSymbol(symbolName) {
   wrapper.height = SYMBOL_SIZE;
 
   wrapper.addChild(spine);
-  const animName = `${symbolName}_static`;
   spine.state.setAnimation(0, animName, true);
 
   wrapper.playWin = () => {

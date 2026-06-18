@@ -16,26 +16,35 @@ export function createBalance(actor, app) {
     text.y = app.screen.height - 20;
   };
 
-  let lastCredits = null;
+  let lastBalance = null;
+  let blinkInterval = null;
 
-  onField(actor, 'credits', (ctx) => {
-    const newCredits = ctx.credits;
-    if (lastCredits !== null && newCredits !== lastCredits) {
-      // Анимация мигания
-      let blink = 0;
+  onField(actor, 'balance', (ctx) => {
+    const newBalance = ctx.balance;
+    if (lastBalance !== null && newBalance !== lastBalance) {
+      // Очищаем предыдущий интервал, если он есть
+      if (blinkInterval) {
+        clearInterval(blinkInterval);
+        blinkInterval = null;
+      }
+
+      // Сохраняем исходный цвет
       const originalColor = text.style.fill;
-      const interval = setInterval(() => {
+
+      // Запускаем новую анимацию
+      let blink = 0;
+      blinkInterval = setInterval(() => {
         text.style.fill = blink % 2 === 0 ? 0xFFFFFF : originalColor;
         blink++;
         if (blink > 3) {
-          clearInterval(interval);
+          clearInterval(blinkInterval);
+          blinkInterval = null;
           text.style.fill = originalColor;
         }
       }, 100);
     }
-    text.text = `${newCredits}`;
-    lastCredits = newCredits;
-    position(); // обновляем позицию после изменения текста (меняется высота)
+    text.text = `${newBalance}`;
+    lastBalance = newBalance;
   });
 
   const onResize = () => {
