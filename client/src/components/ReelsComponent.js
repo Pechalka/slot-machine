@@ -56,63 +56,30 @@ export function createReelsComponent(actor, app) {
     );
 
     unsubscribers.push(
-      onState(actor, 'spinning', () => {
+      subscribeStates(actor, ['spinning', 'freeSpins.spinning'], () => {
         reels.forEach((reel) => reel.startSpin());
       })
     );
 
     unsubscribers.push(
-      onState(actor, 'freeSpins.spinning', () => {
-        reels.forEach((reel) => reel.startSpin());
-      })
-    );
-
-    unsubscribers.push(
-      onState(actor, 'stoppingReels', (ctx) => {
+      subscribeStates(actor, ['stoppingReels', 'freeSpins.stopping'], (ctx) => {
         const { positions } = ctx.spinResult;
         if (positions) {
           reels.forEach((reel, idx) => {
-            reel.stopAtPosition(positions[idx]);
+            // reel.stopAtPosition(positions[idx]);
+            // Длительность 2 секунды, задержка: от краёв к центру
+            const pos = ctx.spinResult.positions[idx];
+            const delays = [0, 0, 0, 0, 0]
+            //[0, 300, 600, 300, 0]; // для 5 барабанов
+            reel.stopAtPosition(pos, 2000, delays[idx] || 0);
           });
         }
       })
     );
 
-    unsubscribers.push(
-      onState(actor, 'freeSpins.stopping', (ctx) => {
-        const { positions } = ctx.spinResult;
-        if (positions) {
-          reels.forEach((reel, idx) => {
-            reel.stopAtPosition(positions[idx]);
-          });
-        }
-      })
-    );
 
     unsubscribers.push(
-      onState(actor, 'winAnimation', async (ctx) => {
-        if (ctx.spinResult?.winningLines) {
-          // Проходим по каждой линии последовательно
-          for (const line of ctx.spinResult.winningLines) {
-            // Собираем промисы для всех позиций в этой линии
-            const linePromises = line.positions.map(([row, col]) => {
-              const reel = reels[col];
-              const symbolName = ctx.spinResult.matrix[row][col];
-              return reel.playWinOnRow(row, symbolName);
-            });
-            // Ждём завершения анимации для всех позиций в этой линии
-            await Promise.all(linePromises);
-            // Небольшая задержка между линиями (опционально, например, 300 мс)
-            await new Promise((resolve) => setTimeout(resolve, 300));
-          }
-        }
-        // Все линии анимированы — отправляем событие
-        actor.send({ type: 'ANIMATION_END' });
-      })
-    );
-
-    unsubscribers.push(
-      onState(actor, 'freeSpins.win', async (ctx) => {
+      subscribeStates(actor, ['freeSpins.win', 'winAnimation'], async (ctx) => {
         if (ctx.spinResult?.winningLines) {
           // Проходим по каждой линии последовательно
           for (const line of ctx.spinResult.winningLines) {

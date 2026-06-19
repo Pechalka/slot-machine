@@ -1,11 +1,5 @@
 import * as PIXI from 'pixi.js';
-
 import { SYMBOL_SIZE, VISIBLE_SYMBOLS } from '../utils';
-
-// TODO
-// генерировать не всю ленту а тока 5-7 елементов и двигать их
-// поменять позици
-// сделать одинаково для любой позиции
 
 export class Reel {
   constructor(app, x, y, createSumbol, strip, speed = 2) {
@@ -15,14 +9,13 @@ export class Reel {
     this.symbols = [];
     this.strip = [...strip];
     this.position = 0;
-    this.speed = speed; // скорость вращения (пикселей за кадр)
+    this.speed = speed;
     this.baseSpeed = speed;
     this.spinning = false;
     this.stripSize = strip.length;
+    this.onStopped = null;
 
-    this.onStopped = null; //колбак остановки
-
-    // Создаём ленту из символов
+    // Создаём ленту
     for (let i = 0; i < this.stripSize; i++) {
       const sym = this.strip[i];
       const symbol = createSumbol(sym);
@@ -45,82 +38,41 @@ export class Reel {
     this._syncPositions();
   }
 
-  stopAtSymbol(symbolName) {
-    if (!this.spinning) return;
-
-    // this.position это самый верх нужно сделать смещение до центра
-    // 5 => 2, 3 => 1 и тд
-    const centerIndex = Math.floor(VISIBLE_SYMBOLS / 2);
-    const offset = centerIndex * SYMBOL_SIZE;
-    const maxPos = this.stripSize * SYMBOL_SIZE;
-    const pos = this.position;
-
-    // this.strip.indexOf(symbolName) не учитывает цикличности
-    // let target = index * SYMBOL_SIZE - offset; так не будет подкручивать к первому
-    // все что ниже это тоже самое тока находит первый по кругу
-
-    // Находим все индексы символа
-    let indices = [];
-    for (let i = 0; i < this.stripSize; i++) {
-      if (this.strip[i] === symbolName) indices.push(i);
-    }
-    if (indices.length === 0) return;
-
-    let bestDelta = Infinity;
-    let bestTarget = null;
-    for (let idx of indices) {
-      let targetPx = idx * SYMBOL_SIZE - offset;
-      let delta = targetPx - pos;
-      // Приводим дельту к положительному значению в диапазоне [0, maxPos)
-      delta = ((delta % maxPos) + maxPos) % maxPos;
-      if (delta < bestDelta) {
-        bestDelta = delta;
-        bestTarget = pos + delta;
-      }
-    }
-    /// -----
-
-    if (bestTarget !== null) {
-      this.targetPosition = bestTarget;
-    }
-  }
-
+  // ---- Остановка по индексу в ленте (для движения вниз) ----
   stopAtPosition(idx) {
     if (!this.spinning) return;
     const maxPos = this.stripSize * SYMBOL_SIZE;
-    const pos = ((this.position % maxPos) + maxPos) % maxPos; // нормализуем позицию
+    const pos = ((this.position % maxPos) + maxPos) % maxPos;
     const centerIndex = Math.floor(VISIBLE_SYMBOLS / 2);
     const offset = centerIndex * SYMBOL_SIZE;
-    // Вычисляем позицию, где символ с индексом idx окажется в центре
     let targetPx = idx * SYMBOL_SIZE - offset;
-    targetPx = ((targetPx % maxPos) + maxPos) % maxPos; // нормализуем
-    // Находим дельту (положительную)
-    let delta = targetPx - pos;
+    targetPx = ((targetPx % maxPos) + maxPos) % maxPos;
+    // Вычисляем расстояние назад
+    let delta = pos - targetPx;
     delta = ((delta % maxPos) + maxPos) % maxPos;
-    this.targetPosition = pos + delta;
+    this.targetPosition = pos - delta;
+    // Нормализуем
+    this.targetPosition = ((this.targetPosition % maxPos) + maxPos) % maxPos;
   }
 
+  // ---- Запуск вращения (вниз) ----
   startSpin() {
     this.spinning = true;
     this.targetPosition = null;
-    this.speed = this.baseSpeed;
+    this.speed = -this.baseSpeed;
   }
 
   stopSpin() {
     this.spinning = false;
   }
 
-
+  // ---- Анимация выигрыша на строке ----
   playWinOnRow(row) {
     const totalHeight = this.stripSize * SYMBOL_SIZE;
-    const maxPos = totalHeight;
-    // Нормализуем позицию (без изменения update)
-    this.position = ((this.position % maxPos) + maxPos) % maxPos;
     const targetY = row * SYMBOL_SIZE;
     for (let i = 0; i < this.symbols.length; i++) {
       const symbol = this.symbols[i];
-      let y = symbol.display.y;
-      y = ((y % totalHeight) + totalHeight) % totalHeight;
+      let y = ((symbol.display.y % totalHeight) + totalHeight) % totalHeight;
       if (Math.abs(y - targetY) < 0.5) {
         if (symbol.playWin) {
           return symbol.playWin();
@@ -130,15 +82,19 @@ export class Reel {
     return Promise.resolve();
   }
 
+  // ---- Обновление каждый кадр ----
   update(delta) {
     if (!this.spinning) return;
 
+    const maxPos = this.stripSize * SYMBOL_SIZE;
+    // Нормализуем позицию в начале каждого кадра
+    this.position = ((this.position % maxPos) + maxPos) % maxPos;
+
     if (this.targetPosition !== null) {
       let diff = this.targetPosition - this.position;
-
-      if (diff < 0 || Math.abs(diff) < 0.5) {
-        const maxPos = this.stripSize * SYMBOL_SIZE;
-        this.position = ((this.targetPosition % maxPos) + maxPos) % maxPos;
+      // Если почти достигли → остановка
+      if (Math.abs(diff) < 0.5) {
+        this.position = this.targetPosition;
         this.spinning = false;
         this.targetPosition = null;
         this._syncPositions();
@@ -146,15 +102,16 @@ export class Reel {
         return;
       }
 
+      // Замедление (движение вниз, speed отрицательная)
       let minSpeed = 0.5;
-      let targetSpeed = Math.min(this.baseSpeed, diff / SYMBOL_SIZE + 0.5);
-      this.speed = Math.max(minSpeed, targetSpeed, this.speed * 0.98);
+      let targetSpeed = Math.min(Math.abs(this.baseSpeed), Math.abs(diff) / SYMBOL_SIZE + 0.5);
+      this.speed = -Math.max(minSpeed, targetSpeed, Math.abs(this.speed) * 0.98);
       let step = this.speed * delta;
-      if (step > diff) step = diff;
+      if (Math.abs(step) > Math.abs(diff)) step = diff;
       this.position += step;
     } else {
+      // Свободное вращение (вниз)
       this.position += this.speed * delta;
-      const maxPos = this.stripSize * SYMBOL_SIZE;
       if (this.position >= maxPos) this.position -= maxPos;
       if (this.position < 0) this.position += maxPos;
     }
@@ -162,9 +119,10 @@ export class Reel {
     this._syncPositions();
   }
 
+  // ---- Синхронизация позиций ----
   _syncPositions() {
     const maxY = this.stripSize * SYMBOL_SIZE;
-    const pos = ((this.position % maxY) + maxY) % maxY; // нормализация
+    const pos = ((this.position % maxY) + maxY) % maxY;
     for (let i = 0; i < this.symbols.length; i++) {
       let y = (i * SYMBOL_SIZE - pos) % maxY;
       if (y < -SYMBOL_SIZE) y += maxY;
