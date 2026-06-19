@@ -22,33 +22,11 @@ export function generateVisualStripFromWeights(weights, repeats = 1) {
   return strip; // возвращаем уникальный массив
 }
 
-export const colors = {
-  h1: 0xe34234,
-  h2: 0xfff44f,
-  h3: 0xffa500,
-  h4: 0xc0c0c0,
-  l1: 0x8b0000,
-  l2: 0x8b0000,
-  l4: 0x8b0000,
-};
-export const SYMBOL_EMOJI = {
-  h1: '🍒',
-  h2: '🍋',
-  h3: '🍊',
-  h4: '🔔',
-  l1: '1️⃣',
-  l2: '2️⃣',
-  // l3
-  l4: '4️⃣',
-};
-
 export const SYMBOL_SIZE = 100;
 export const VISIBLE_SYMBOLS = 3;
 export const REEL_WIDTH = 120;
 
-
-
-export function createEmojiTexture(app, name) {
+export function createEmojiTexture(app, emoji, color) {
   const padding = 5;
   const bgHeight = SYMBOL_SIZE - padding * 2;
   const bgY = padding;
@@ -67,7 +45,7 @@ export function createEmojiTexture(app, name) {
 
   // Цветной фон с отступами
   const bg = new PIXI.Graphics();
-  bg.beginFill(colors[name], 0.9);
+  bg.beginFill(color, 0.9);
   bg.drawRoundedRect(0, bgY, SYMBOL_SIZE, bgHeight, 12);
   bg.endFill();
   tempContainer.addChild(bg);
@@ -78,7 +56,7 @@ export function createEmojiTexture(app, name) {
     fontSize: fontSize,
     fontFamily: 'Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif',
   });
-  const text = new PIXI.Text(SYMBOL_EMOJI[name], style);
+  const text = new PIXI.Text(emoji, style);
   text.anchor.set(0.5);
   text.position.set(SYMBOL_SIZE / 2, bgCenterY);
   tempContainer.addChild(text);

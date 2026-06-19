@@ -12,7 +12,7 @@ export class Reel {
     this.container = new PIXI.Container();
     this.container.x = x;
     this.container.y = y;
-    this.sprites = [];
+    this.symbols = [];
     this.strip = [...strip];
     this.position = 0;
     this.speed = speed; // скорость вращения (пикселей за кадр)
@@ -25,12 +25,10 @@ export class Reel {
     // Создаём ленту из символов
     for (let i = 0; i < this.stripSize; i++) {
       const sym = this.strip[i];
-      const sprite = createSumbol(sym);
-      sprite.width = SYMBOL_SIZE;
-      sprite.height = SYMBOL_SIZE;
-      sprite.y = i * SYMBOL_SIZE;
-      this.container.addChild(sprite);
-      this.sprites.push(sprite);
+      const symbol = createSumbol(sym);
+      symbol.display.y = i * SYMBOL_SIZE;
+      this.container.addChild(symbol.display);
+      this.symbols.push(symbol);
     }
 
     this.targetPosition = null;
@@ -112,12 +110,6 @@ export class Reel {
     this.spinning = false;
   }
 
-  getCenterSymbolIndex() {
-    const centerIndex = Math.floor(VISIBLE_SYMBOLS / 2); // номер видимого слота (0,1,2)
-    const totalHeight = this.stripSize * SYMBOL_SIZE;
-    const rawPos = (this.position + centerIndex * SYMBOL_SIZE) % totalHeight;
-    return Math.floor(rawPos / SYMBOL_SIZE) % this.stripSize; // индекс в ленте
-  }
 
   playWinOnRow(row) {
     const totalHeight = this.stripSize * SYMBOL_SIZE;
@@ -125,9 +117,9 @@ export class Reel {
     // Нормализуем позицию (без изменения update)
     this.position = ((this.position % maxPos) + maxPos) % maxPos;
     const targetY = row * SYMBOL_SIZE;
-    for (let i = 0; i < this.sprites.length; i++) {
-      const symbol = this.sprites[i];
-      let y = symbol.y;
+    for (let i = 0; i < this.symbols.length; i++) {
+      const symbol = this.symbols[i];
+      let y = symbol.display.y;
       y = ((y % totalHeight) + totalHeight) % totalHeight;
       if (Math.abs(y - targetY) < 0.5) {
         if (symbol.playWin) {
@@ -135,29 +127,6 @@ export class Reel {
         }
       }
     }
-    return Promise.resolve();
-  }
-
-  playWinOnCenter() {
-    const centerSlot = Math.floor(VISIBLE_SYMBOLS / 2);
-    const centerY = centerSlot * SYMBOL_SIZE;
-    const totalHeight = this.stripSize * SYMBOL_SIZE;
-
-    let targetSprite = null;
-    for (let i = 0; i < this.sprites.length; i++) {
-      const sprite = this.sprites[i];
-      let y = sprite.y;
-      y = ((y % totalHeight) + totalHeight) % totalHeight;
-      if (y >= centerY && y < centerY + SYMBOL_SIZE) {
-        targetSprite = sprite;
-        break;
-      }
-    }
-
-    if (targetSprite && targetSprite.playWin) {
-      return targetSprite.playWin();
-    }
-
     return Promise.resolve();
   }
 
@@ -169,7 +138,7 @@ export class Reel {
 
       if (diff < 0 || Math.abs(diff) < 0.5) {
         const maxPos = this.stripSize * SYMBOL_SIZE;
-        this.position = ((this.targetPosition % maxPos) + maxPos) % maxPos; // <-- нормализация
+        this.position = ((this.targetPosition % maxPos) + maxPos) % maxPos;
         this.spinning = false;
         this.targetPosition = null;
         this._syncPositions();
@@ -196,10 +165,10 @@ export class Reel {
   _syncPositions() {
     const maxY = this.stripSize * SYMBOL_SIZE;
     const pos = ((this.position % maxY) + maxY) % maxY; // нормализация
-    for (let i = 0; i < this.sprites.length; i++) {
+    for (let i = 0; i < this.symbols.length; i++) {
       let y = (i * SYMBOL_SIZE - pos) % maxY;
       if (y < -SYMBOL_SIZE) y += maxY;
-      this.sprites[i].y = y;
+      this.symbols[i].display.y = y;
     }
   }
 }

@@ -3,7 +3,7 @@ import { createBalance } from './Balance.js';
 import { createBet } from './Bet.js';
 import { createReelsComponent } from './ReelsComponent.js';
 import { createWinDisplay } from './WinDisplay';
-import { loadSymbolsAssets, generateSymbolTextures } from '../spineLoader.js';
+import { loadAllSymbolsAssets } from '../symbolsLoader.js';
 import { createFreeSpinsResultPopup } from './FreeSpinsResultPopup.js';
 import { createFreeSpinsCounter } from './FreeSpinsCounter.js';
 import { onState } from '../xstate-subscribers.js';
@@ -22,8 +22,7 @@ export function createGame(actor, app) {
   const reelsComponent = createReelsComponent(actor, app);
 
   async function init() {
-    await loadSymbolsAssets();
-    await generateSymbolTextures(app);
+    await loadAllSymbolsAssets(app);
 
     reelsComponent.init();
 

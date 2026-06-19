@@ -8,7 +8,8 @@ import {
   VISIBLE_SYMBOLS,
 } from '../utils.js';
 import { onState, onField, subscribeStates } from '../xstate-subscribers.js';
-import { createSpineSymbol, createTextureSymbol } from '../spineLoader.js';
+// import { createSpineSymbol, createTextureSymbol } from '../spineLoader.js';
+import { createSymbol } from './Symbol.js'
 
 export function createReelsComponent(actor, app) {
   let reels = [];
@@ -28,9 +29,7 @@ export function createReelsComponent(actor, app) {
     const reelsCount = reelsData.length;
 
     const createSumbol = (sym) => {
-      return createSpineSymbol(sym);
-      // return new PIXI.Sprite(PIXI.Assets.get(sym + '_emoji'));
-      // return createTextureSymbol(sym);
+      return createSymbol(sym);
     };
 
     for (let i = 0; i < reelsCount; i++) {
