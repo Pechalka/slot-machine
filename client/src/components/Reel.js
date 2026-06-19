@@ -15,6 +15,8 @@ export class Reel {
     this.stripSize = strip.length;
     this.onStopped = null;
 
+    this.direction = -1; // up / down
+
     // Создаём ленту
     for (let i = 0; i < this.stripSize; i++) {
       const sym = this.strip[i];
@@ -38,7 +40,6 @@ export class Reel {
     this._syncPositions();
   }
 
-  // ---- Остановка по индексу в ленте (для движения вниз) ----
   stopAtPosition(idx) {
     if (!this.spinning) return;
     const maxPos = this.stripSize * SYMBOL_SIZE;
@@ -47,19 +48,19 @@ export class Reel {
     const offset = centerIndex * SYMBOL_SIZE;
     let targetPx = idx * SYMBOL_SIZE - offset;
     targetPx = ((targetPx % maxPos) + maxPos) % maxPos;
-    // Вычисляем расстояние назад
-    let delta = pos - targetPx;
+
+    // Вычисляем дельту с учётом направления
+    let delta = (pos - targetPx) * this.direction;
     delta = ((delta % maxPos) + maxPos) % maxPos;
-    this.targetPosition = pos - delta;
+    this.targetPosition = pos - delta * this.direction;
     // Нормализуем
     this.targetPosition = ((this.targetPosition % maxPos) + maxPos) % maxPos;
   }
-
   // ---- Запуск вращения (вниз) ----
   startSpin() {
     this.spinning = true;
     this.targetPosition = null;
-    this.speed = -this.baseSpeed;
+    this.speed = this.direction * this.baseSpeed;
   }
 
   stopSpin() {
@@ -105,8 +106,8 @@ export class Reel {
       // Замедление (движение вниз, speed отрицательная)
       let minSpeed = 0.5;
       let targetSpeed = Math.min(Math.abs(this.baseSpeed), Math.abs(diff) / SYMBOL_SIZE + 0.5);
-      this.speed = -Math.max(minSpeed, targetSpeed, Math.abs(this.speed) * 0.98);
-      let step = this.speed * delta;
+      this.speed = Math.max(minSpeed, targetSpeed, Math.abs(this.speed) * 0.98);
+      let step = this.speed * delta * this.direction;
       if (Math.abs(step) > Math.abs(diff)) step = diff;
       this.position += step;
     } else {

@@ -69,7 +69,7 @@ export function createReelsComponent(actor, app) {
             // reel.stopAtPosition(positions[idx]);
             // Длительность 2 секунды, задержка: от краёв к центру
             const pos = ctx.spinResult.positions[idx];
-            const delays = [0, 0, 0, 0, 0]
+            const delays = [0, 100, 200, 300, 400]
             //[0, 300, 600, 300, 0]; // для 5 барабанов
             reel.stopAtPosition(pos, 2000, delays[idx] || 0);
           });
