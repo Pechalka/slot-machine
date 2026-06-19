@@ -1,5 +1,5 @@
 export default {
-  "debug": true,
+  "debug": false ,
   "positions": [ 12, 4, 27, 11, 26 ]
   // "rounds": [
   //   { "positions": [23, 22, 3, 1, 22], "isFreeSpin": false },

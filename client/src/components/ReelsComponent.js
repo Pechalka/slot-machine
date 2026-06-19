@@ -33,7 +33,7 @@ export function createReelsComponent(actor, app) {
     };
 
     for (let i = 0; i < reelsCount; i++) {
-      const reel = new Reel(app, 0, 0, createSumbol, reelsData[i], 10);
+      const reel = new Reel(app, 0, 0, createSumbol, reelsData[i], 15);
       reel.onStopped = () => {
         actor.send({ type: 'REEL_STOPPED' });
       };
@@ -71,7 +71,7 @@ export function createReelsComponent(actor, app) {
             const pos = ctx.spinResult.positions[idx];
             const delays = [0, 100, 200, 300, 400]
             //[0, 300, 600, 300, 0]; // для 5 барабанов
-            reel.stopAtPosition(pos, 2000, delays[idx] || 0);
+            reel.stopAtPosition(pos, delays[idx] || 0, 3000);
           });
         }
       })
