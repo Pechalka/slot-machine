@@ -14,6 +14,9 @@ importers:
       '@esotericsoftware/spine-pixi-v8':
         specifier: 4.2.119
         version: 4.2.119(pixi.js@8.17.0)
+      pixi-reels:
+        specifier: ^1.0.1
+        version: 1.0.1(@esotericsoftware/spine-pixi-v8@4.2.119(pixi.js@8.17.0))(gsap@3.15.0)(pixi.js@8.17.0)
       pixi.js:
         specifier: 8.17.0
         version: 8.17.0
@@ -375,6 +378,9 @@ packages:
   gifuct-js@2.1.2:
     resolution: {integrity: sha512-rI2asw77u0mGgwhV3qA+OEgYqaDn5UNqgs+Bx0FGwSpuqfYn+Ir6RQY5ENNQ8SbIiG/m5gVa7CD5RriO4f4Lsg==}
 
+  gsap@3.15.0:
+    resolution: {integrity: sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A==}
+
   ismobilejs@1.1.1:
     resolution: {integrity: sha512-VaFW53yt8QO61k2WJui0dHf4SlL8lxBofUuUmwBo0ljPk0Drz2TiuDW4jo3wDcv41qy/SxrJ+VAzJ/qYqsmzRw==}
 
@@ -395,6 +401,16 @@ packages:
   picomatch@4.0.4:
     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
+
+  pixi-reels@1.0.1:
+    resolution: {integrity: sha512-wuoE0Jyk3LaeYeZuDQbSz33a8+NjrMduFgeR5Qfa4J3yQRAjjFxx4TmfECln8mw5xXYz/i1VgVniWGJfPiX1eQ==}
+    peerDependencies:
+      '@esotericsoftware/spine-pixi-v8': ~4.2.110
+      gsap: ^3.15.0
+      pixi.js: ^8.18.1
+    peerDependenciesMeta:
+      '@esotericsoftware/spine-pixi-v8':
+        optional: true
 
   pixi.js@8.17.0:
     resolution: {integrity: sha512-A6AhxbNG8Abo5xyNRJx//ETefTCcwWx2sw9e/E57YCGQ8MuvS5o2mbofBOPCdf1J+z6VKd7MZjictS9EkMXiuw==}
@@ -683,6 +699,8 @@ snapshots:
     dependencies:
       js-binary-schema-parser: 2.0.3
 
+  gsap@3.15.0: {}
+
   ismobilejs@1.1.1: {}
 
   js-binary-schema-parser@2.0.3: {}
@@ -694,6 +712,13 @@ snapshots:
   picocolors@1.1.1: {}
 
   picomatch@4.0.4: {}
+
+  pixi-reels@1.0.1(@esotericsoftware/spine-pixi-v8@4.2.119(pixi.js@8.17.0))(gsap@3.15.0)(pixi.js@8.17.0):
+    dependencies:
+      gsap: 3.15.0
+      pixi.js: 8.17.0
+    optionalDependencies:
+      '@esotericsoftware/spine-pixi-v8': 4.2.119(pixi.js@8.17.0)
 
   pixi.js@8.17.0:
     dependencies:
