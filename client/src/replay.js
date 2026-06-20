@@ -1,6 +1,6 @@
 export default {
   "debug": false ,
-  "positions": [23, 22, 3, 1, 22]
+  "positions": [ 33, 26, 27, 11, 29 ]
   // "rounds": [
   //   { "positions": [23, 22, 3, 1, 22], "isFreeSpin": false },
   //   { "positions": [8, 7, 1, 5, 9], "isFreeSpin": true },
@@ -11,6 +11,9 @@ export default {
   //   { "positions": [9, 14, 19, 24, 29], "isFreeSpin": true }
   // ]
 }
+
+//[ 33, 26, 27, 11, 29 ]
+// [ 0, 0, 20  , 19 , 0  ]
 
 // [ 12, 4, 27, 11, 26 ]
 // [ 4, 13, 0, 13, 3 ]
