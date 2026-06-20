@@ -57,7 +57,7 @@ export function createReelsComponent(actor, app) {
 
     unsubscribers.push(
       subscribeStates(actor, ['spinning', 'freeSpins.spinning'], () => {
-        reels.forEach((reel) => reel.startSpin());
+        reels.forEach((reel, idx) => reel.startSpin(idx * 100));
       })
     );
 
@@ -69,9 +69,9 @@ export function createReelsComponent(actor, app) {
             // reel.stopAtPosition(positions[idx]);
             // Длительность 2 секунды, задержка: от краёв к центру
             const pos = ctx.spinResult.positions[idx];
-            const delays = [0, 100, 200, 300, 400]
+            const stopDelays = [0, 200, 400, 600, 800];
             //[0, 300, 600, 300, 0]; // для 5 барабанов
-            reel.stopAtPosition(pos, delays[idx] || 0, 3000);
+            reel.stopAtPosition(pos, stopDelays[idx] || 0, 1500);
           });
         }
       })

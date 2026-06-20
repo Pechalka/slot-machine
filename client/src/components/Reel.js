@@ -18,10 +18,17 @@ export class Reel {
 
     // Поля для time-based торможения
     this.brakeStartTime = 0;
-    this.brakeDuration = 1000; // длительность торможения (мс)
+    this.brakeDuration = 1500;
     this.brakeStartPosition = 0;
     this.targetPosition = null;
     this.isBraking = false;
+    this._brakeStarted = false;
+
+    this._stopIdx = 0;
+    // Поля для time-based запуска (каскад)
+    this.startDelay = 0;
+    this.spinStartTime = 0;
+    this.isWaiting = false;
 
     // Создаём ленту
     for (let i = 0; i < this.stripSize; i++) {
@@ -32,59 +39,64 @@ export class Reel {
       this.symbols.push(symbol);
     }
 
-    // Маска
+    // const mask = new PIXI.Graphics();
+    // mask.beginFill(0xffffff);
+    // mask.drawRect(0, 0, SYMBOL_SIZE, SYMBOL_SIZE * VISIBLE_SYMBOLS);
+    // mask.endFill();
+    // this.container.mask = mask;
+    // this.container.addChild(mask);
     const mask = new PIXI.Graphics();
-    mask.beginFill(0xffffff);
-    mask.drawRect(0, 0, SYMBOL_SIZE, SYMBOL_SIZE * VISIBLE_SYMBOLS);
-    mask.endFill();
-    this.container.mask = mask;
-    this.container.addChild(mask);
+mask.beginFill(0xffffff);
+mask.drawRect(0, 0, SYMBOL_SIZE, SYMBOL_SIZE * VISIBLE_SYMBOLS);
+mask.endFill();
+this.container.mask = mask;
+this.container.addChild(mask);
 
     app.stage.addChild(this.container);
     this._syncPositions();
   }
 
-  // ---- Остановка по индексу с задержкой и временем торможения ----
- stopAtPosition(idx, delay = 0, duration = 1000) {
-  if (!this.spinning) return;
-  const maxPos = this.stripSize * SYMBOL_SIZE;
-  const pos = this.position; // не нормализуем
-
-  const centerIndex = Math.floor(VISIBLE_SYMBOLS / 2);
-  const offset = centerIndex * SYMBOL_SIZE;
-  let targetPx = idx * SYMBOL_SIZE - offset;
-  targetPx = ((targetPx % maxPos) + maxPos) % maxPos;
-
-  let diff = targetPx - pos;
-
-  // Корректируем diff в зависимости от направления
-  if (this.direction === -1) {
-    // Движение вниз: цель должна быть позади (diff < 0)
-    while (diff >= 0) diff -= maxPos;
-  } else {
-    // Движение вверх: цель должна быть впереди (diff >= 0)
-    while (diff < 0) diff += maxPos;
-  }
-
-  this.targetPosition = pos + diff;
-  // Не нормализуем! Храним как есть (может быть отрицательным или > maxPos)
-
-  this.brakeStartTime = performance.now() + delay;
-  this.brakeDuration = duration;
-  this.brakeStartPosition = this.position;
-  this.isBraking = true;
-}
-
-  // ---- Запуск вращения (в направлении direction) ----
-  startSpin() {
+  // ---- Запуск вращения с каскадной задержкой (time-based) ----
+  startSpin(delay = 0) {
     this.spinning = true;
     this.targetPosition = null;
     this.isBraking = false;
+    this._brakeStarted = false;
     this.speed = this.direction * this.baseSpeed;
+    if (delay > 0) {
+      this.isWaiting = true;
+      this.spinStartTime = performance.now() + delay;
+    } else {
+      this.isWaiting = false;
+    }
+     this._syncPositions();
   }
 
-  stopSpin() {
-    this.spinning = false;
+  // ---- Остановка с каскадной задержкой (time-based) ----
+  stopAtPosition(idx, delay = 0, duration = 1500) {
+    if (!this.spinning) return;
+    this._stopIdx = idx;
+    const maxPos = this.stripSize * SYMBOL_SIZE;
+    const pos = this.position;
+
+    const centerIndex = Math.floor(VISIBLE_SYMBOLS / 2);
+    const offset = centerIndex * SYMBOL_SIZE;
+    let targetPx = idx * SYMBOL_SIZE - offset;
+    targetPx = ((targetPx % maxPos) + maxPos) % maxPos;
+
+    let diff = targetPx - pos;
+
+    if (this.direction === -1) {
+      while (diff >= 0) diff -= maxPos;
+    } else {
+      while (diff < 0) diff += maxPos;
+    }
+
+    this.targetPosition = pos + diff;
+    this.brakeStartTime = performance.now() + delay;
+    this.brakeDuration = duration;
+    this.brakeStartPosition = this.position;
+    this.isBraking = true;
   }
 
   // ---- Анимация выигрыша на строке ----
@@ -104,52 +116,91 @@ export class Reel {
   }
 
   // ---- Обновление каждый кадр ----
-update(delta) {
-  if (!this.spinning) return;
+  update(t) {
+    const delta = t.deltaTime;
+    if (!this.spinning) return;
 
-  const maxPos = this.stripSize * SYMBOL_SIZE;
+    const maxPos = this.stripSize * SYMBOL_SIZE;
 
-  // ---- Торможение (time-based) ----
-  if (this.isBraking && this.targetPosition !== null) {
-    const now = performance.now();
-    const elapsed = now - this.brakeStartTime;
+    // ---- Фаза 1: Ожидание старта (time-based) ----
+    if (this.isWaiting) {
+      const now = performance.now();
+      if (now < this.spinStartTime) {
+        // Ждём — стоим на месте
+        this._syncPositions();
+        return;
+      } else {
+        this.isWaiting = false;
+        // Задержка прошла, начинаем вращение (переходим к свободному вращению)
+      }
+    }
 
-    if (elapsed < 0) {
-      // задержка — крутимся с постоянной скоростью
-      this.position += this.speed * delta;
+    // ---- Фаза 2: Торможение (time-based) ----
+    if (this.isBraking && this.targetPosition !== null) {
+      const now = performance.now();
+      const elapsed = now - this.brakeStartTime;
+
+      if (elapsed < 0) {
+        // задержка — крутимся с постоянной скоростью
+        this.position += this.speed * delta;
+        this._syncPositions();
+        return;
+      }
+
+      if (!this._brakeStarted) {
+        this._brakeStarted = true;
+        this.brakeStartPosition = this.position;
+
+        // Пересчитываем targetPosition с учётом текущей позиции
+        const maxPos = this.stripSize * SYMBOL_SIZE;
+        const pos = this.position;
+        const centerIndex = Math.floor(VISIBLE_SYMBOLS / 2);
+        const offset = centerIndex * SYMBOL_SIZE;
+        let targetPx = this._stopIdx * SYMBOL_SIZE - offset;
+        targetPx = ((targetPx % maxPos) + maxPos) % maxPos;
+        let diff = targetPx - pos;
+        if (this.direction === -1) {
+          while (diff >= 0) diff -= maxPos;
+        } else {
+          while (diff < 0) diff += maxPos;
+        }
+        this.targetPosition = pos + diff;
+      }
+
+      const progress = Math.min((now - this.brakeStartTime) / this.brakeDuration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const currentPos =
+        this.brakeStartPosition + (this.targetPosition - this.brakeStartPosition) * eased;
+      this.position = currentPos;
+
+      if (Math.abs(this.position - this.targetPosition) < 0.5 || progress >= 1) {
+        this.position = this.targetPosition;
+        this.spinning = false;
+        this.isBraking = false;
+        this.targetPosition = null;
+        this._brakeStarted = false;
+        const maxPos = this.stripSize * SYMBOL_SIZE;
+        this.position = ((this.position % maxPos) + maxPos) % maxPos;
+        this._syncPositions();
+        if (this.onStopped) this.onStopped();
+        return;
+      }
+
       this._syncPositions();
       return;
     }
 
-    const progress = Math.min(elapsed / this.brakeDuration, 1);
-    // easeOutCubic: плавное замедление в конце
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const currentPos = this.brakeStartPosition + (this.targetPosition - this.brakeStartPosition) * eased;
-    this.position = currentPos;
+    // console.log('speed:', this.speed, 'delta:', delta);
 
-    // Если уже близко к цели — останавливаемся
-    if (Math.abs(this.position - this.targetPosition) < 0.5 || progress >= 1) {
-      this.position = this.targetPosition;
-      this.spinning = false;
-      this.isBraking = false;
-      this.targetPosition = null;
-      // Нормализуем после остановки
-      this.position = ((this.position % maxPos) + maxPos) % maxPos;
-      this._syncPositions();
-      if (this.onStopped) this.onStopped();
-      return;
-    }
-
+    // ---- Фаза 3: Свободное вращение (speed-based) ----
+    this.position += this.speed * delta;
+    if (this.position >= maxPos) this.position -= maxPos;
+    if (this.position < 0) this.position += maxPos;
     this._syncPositions();
-    return;
+
+
   }
 
-  // ---- Свободное вращение (speed-based) ----
-  this.position += this.speed * delta;
-  if (this.position >= maxPos) this.position -= maxPos;
-  if (this.position < 0) this.position += maxPos;
-  this._syncPositions();
-}
   // ---- Синхронизация позиций ----
   _syncPositions() {
     const maxY = this.stripSize * SYMBOL_SIZE;
@@ -157,6 +208,7 @@ update(delta) {
     for (let i = 0; i < this.symbols.length; i++) {
       let y = (i * SYMBOL_SIZE - pos) % maxY;
       if (y < -SYMBOL_SIZE) y += maxY;
+        //  console.log(`symbol ${i}: y=${y}, pos=${pos}`);
       this.symbols[i].display.y = y;
     }
   }

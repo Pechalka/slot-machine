@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite';
-import path from 'path-browserify';
 
 const isDev = process.env?.NODE_ENV !== 'production';
 const PROXY = 7777;
