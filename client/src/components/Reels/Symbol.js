@@ -1,17 +1,20 @@
 import { Assets, Container, Sprite } from 'pixi.js';
-import * as SPINE_PIXI from '@esotericsoftware/spine-pixi-v7';
-import { SYMBOL_SIZE } from '../utils.js';
-import { symbolRegistry } from '../symbolsLoader.js';
+import * as SPINE_PIXI from '@esotericsoftware/spine-pixi-v8';
+import { SYMBOL_SIZE } from '../../utils.js';
+import { symbolRegistry } from '../../symbolsLoader.js';
 
 
 export function createSpineSymbol(symbolName, skeleton, atlas) {
-  const idleAnim = `${skeleton}_static`;
-  const winAnim = skeleton;
+  let idleAnim = `${skeleton}_static`;
+  let winAnim = skeleton;
+  if (symbolName === 'S') {
+      idleAnim = 'scatter_static';
+      winAnim = 'scatter_win';
+  }
 
-  const spine = SPINE_PIXI.Spine.from({ skeleton: skeleton, atlas, scale: 0.5 });
-  // Масштабируем под размер ячейки
-  spine.scale.set(0.1);
+  const spine = SPINE_PIXI.Spine.from({ skeleton: skeleton, atlas });
   spine.position.set(spine.width / 2, spine.height / 2);
+
 
   const wrapper = new Container();
 
@@ -20,6 +23,10 @@ export function createSpineSymbol(symbolName, skeleton, atlas) {
 
   wrapper.width = SYMBOL_SIZE;
   wrapper.height = SYMBOL_SIZE;
+
+  if (symbolName == 'S') {
+    spine.scale.set(2)
+  }
 
   return {
     display: wrapper,
@@ -79,5 +86,6 @@ export function createSymbol(symbolName) {
   if (type == 'spine') return createSpineSymbol(symbolName, skeleton, atlas);
   if (type == 'texture') return createTextureSymbol(symbolName, textureName);
 
-  throw symbolName + ' not found'
+  // throw symbolName + ' not found'
+  // return createSpineSymbol('h1', 'h1', 'atlas');
 }

@@ -1,6 +1,7 @@
 const { getReels } = require('../reelsManager');
 
 const { getState } = require('../state');
+const { symbolWeights } = require('../config');
 
 function configRouter(req, res) {
   const reels = getReels();
@@ -13,6 +14,7 @@ function configRouter(req, res) {
     defaultBet: 1,
     betStep: 1,
 
+    symbolWeights,
     initialBalance: state.balance,
     freeSpinsLeft: state.freeSpinsLeft,
     freeSpinsTotalWin: state.freeSpinsTotalWin,

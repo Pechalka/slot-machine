@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { SYMBOL_SIZE, VISIBLE_SYMBOLS } from '../utils';
+import { SYMBOL_SIZE, VISIBLE_SYMBOLS } from '../../utils';
 
 export class Reel {
   constructor(app, x, y, createSumbol, strip, speed = 2) {
@@ -84,7 +84,9 @@ export class Reel {
   }
 
   // ---- Обновление каждый кадр ----
-  update(delta) {
+  update(t) {
+    const delta = t.deltaTime;
+
     if (!this.spinning) return;
 
     const maxPos = this.stripSize * SYMBOL_SIZE;

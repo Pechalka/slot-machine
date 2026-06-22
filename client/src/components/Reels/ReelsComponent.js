@@ -6,8 +6,8 @@ import {
   REEL_WIDTH,
   SYMBOL_SIZE,
   VISIBLE_SYMBOLS,
-} from '../utils.js';
-import { onState, onField, subscribeStates } from '../xstate-subscribers.js';
+} from '../../utils.js';
+import { onState, onField, subscribeStates } from '../../xstate-subscribers.js';
 // import { createSpineSymbol, createTextureSymbol } from '../spineLoader.js';
 import { createSymbol } from './Symbol.js'
 
@@ -33,7 +33,7 @@ export function createReelsComponent(actor, app) {
     };
 
     for (let i = 0; i < reelsCount; i++) {
-      const reel = new Reel(app, 0, 0, createSumbol, reelsData[i], 10);
+      const reel = new Reel(app, 0, 0, createSumbol, reelsData[i], 15);
       reel.onStopped = () => {
         actor.send({ type: 'REEL_STOPPED' });
       };
@@ -57,7 +57,7 @@ export function createReelsComponent(actor, app) {
 
     unsubscribers.push(
       subscribeStates(actor, ['spinning', 'freeSpins.spinning'], () => {
-        reels.forEach((reel) => reel.startSpin());
+        reels.forEach((reel, idx) => reel.startSpin(idx * 100));
       })
     );
 
@@ -69,9 +69,9 @@ export function createReelsComponent(actor, app) {
             // reel.stopAtPosition(positions[idx]);
             // Длительность 2 секунды, задержка: от краёв к центру
             const pos = ctx.spinResult.positions[idx];
-            const delays = [0, 100, 200, 300, 400]
+            const stopDelays = [0, 200, 400, 600, 800];
             //[0, 300, 600, 300, 0]; // для 5 барабанов
-            reel.stopAtPosition(pos, 2000, delays[idx] || 0);
+            reel.stopAtPosition(pos, stopDelays[idx] || 0, 1500);
           });
         }
       })

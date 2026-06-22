@@ -1,7 +1,10 @@
 import { createSpinButton } from './SpinButton.js';
 import { createBalance } from './Balance.js';
 import { createBet } from './Bet.js';
-import { createReelsComponent } from './ReelsComponent.js';
+// import { createReelsComponent } from './Reels/ReelsComponent.js';
+// import { createReelsComponent } from './Reels/PixiReelsComponent.js';
+import { createReelsComponent } from './Reels';
+
 import { createWinDisplay } from './WinDisplay';
 import { loadAllSymbolsAssets } from '../symbolsLoader.js';
 import { createFreeSpinsResultPopup } from './FreeSpinsResultPopup.js';
