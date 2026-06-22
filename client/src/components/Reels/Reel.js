@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { SYMBOL_SIZE, VISIBLE_SYMBOLS } from '../utils';
+import { SYMBOL_SIZE, VISIBLE_SYMBOLS } from '../../utils';
 
 export class Reel {
   constructor(app, x, y, createSumbol, strip, speed = 2, direction = -1) {

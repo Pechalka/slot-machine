@@ -6,8 +6,8 @@ import {
   REEL_WIDTH,
   SYMBOL_SIZE,
   VISIBLE_SYMBOLS,
-} from '../utils.js';
-import { onState, onField, subscribeStates } from '../xstate-subscribers.js';
+} from '../../utils.js';
+import { onState, onField, subscribeStates } from '../../xstate-subscribers.js';
 // import { createSpineSymbol, createTextureSymbol } from '../spineLoader.js';
 import { createSymbol } from './Symbol.js'
 

@@ -1,10 +1,10 @@
 // components/ReelsComponent.js
 import { ReelSetBuilder, SpriteSymbol, SpeedPresets, enableDebug } from 'pixi-reels';
-import { symbolRegistry } from '../symbolsLoader.js';
-import { createEmojiTexture } from '../utils.js';
+import { symbolRegistry } from '../../symbolsLoader.js';
+import { createEmojiTexture } from '../../utils.js';
 import { SpineReelSymbol } from 'pixi-reels/spine';
 
-import { onField, subscribeStates } from '../xstate-subscribers.js';
+import { onField, subscribeStates } from '../../xstate-subscribers.js';
 
 class EmojiSpriteSymbol extends SpriteSymbol {
   constructor(opts) {

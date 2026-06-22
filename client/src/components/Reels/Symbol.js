@@ -1,7 +1,7 @@
 import { Assets, Container, Sprite } from 'pixi.js';
 import * as SPINE_PIXI from '@esotericsoftware/spine-pixi-v8';
-import { SYMBOL_SIZE } from '../utils.js';
-import { symbolRegistry } from '../symbolsLoader.js';
+import { SYMBOL_SIZE } from '../../utils.js';
+import { symbolRegistry } from '../../symbolsLoader.js';
 
 
 export function createSpineSymbol(symbolName, skeleton, atlas) {
