@@ -14,6 +14,9 @@ importers:
       '@esotericsoftware/spine-pixi-v8':
         specifier: 4.2.119
         version: 4.2.119(pixi.js@8.17.0)
+      '@pixi/sound':
+        specifier: ^6.0.1
+        version: 6.0.1(pixi.js@8.17.0)
       pixi-reels:
         specifier: ^1.0.1
         version: 1.0.1(@esotericsoftware/spine-pixi-v8@4.2.119(pixi.js@8.17.0))(gsap@3.15.0)(pixi.js@8.17.0)
@@ -198,6 +201,11 @@ packages:
 
   '@pixi/colord@2.9.6':
     resolution: {integrity: sha512-nezytU2pw587fQstUu1AsJZDVEynjskwOL+kibwcdxsMBFqPsFFNA7xl0ii/gXuDi6M0xj3mfRJj8pBSc2jCfA==}
+
+  '@pixi/sound@6.0.1':
+    resolution: {integrity: sha512-hpFlQSScAR2L/CsEoIvDi7s1oGsu8y9Zd742Vd3982N+q3IF2vFuIfV9HN4ryjlGnhCT8yBlEgs1gp4G9Rt9TA==}
+    peerDependencies:
+      pixi.js: ^8.0.0
 
   '@rollup/rollup-android-arm-eabi@4.62.2':
     resolution: {integrity: sha512-6o7ZLZK+BeenkZCFNDXqpbjw9bD6nuWonvS/lwQJp7NoVVxm6p3qE7qQ5jGuBjiFsgvqjD8mZAU5oWxTmbOeOg==}
@@ -571,6 +579,10 @@ snapshots:
       pixi.js: 8.17.0
 
   '@pixi/colord@2.9.6': {}
+
+  '@pixi/sound@6.0.1(pixi.js@8.17.0)':
+    dependencies:
+      pixi.js: 8.17.0
 
   '@rollup/rollup-android-arm-eabi@4.62.2':
     optional: true

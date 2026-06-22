@@ -6,8 +6,9 @@ import { createBalance } from './Balance.js';
 import { createFreeSpinsCounter } from './FreeSpinsCounter.js';
 import { createBet } from './Bet.js';
 import { createReelsComponent } from './Reels';
-
+import { createSoundToggleButton } from './SoundToggleButton.js'
 import { subscribeStates, onState, subscribeFields, onField } from '../xstate-subscribers.js';
+import { soundManager } from '../soundManager.js';
 
 export function createUIController(actor, app) {
   // win display
@@ -126,13 +127,16 @@ export function createUIController(actor, app) {
 
   subscribeStates(actor, ['spinning', 'freeSpins.spinning'], () => {
     reelsComponent.spin();
+    soundManager.play('click')
   });
 
   subscribeStates(actor, ['stoppingReels', 'freeSpins.stopping'], (ctx) => {
     reelsComponent.setResult(ctx.spinResult);
+    soundManager.play('stop')
   });
 
   subscribeStates(actor, ['freeSpins.win', 'winAnimation'], async (ctx) => {
+    soundManager.play('win')
     await reelsComponent.showWinAnimation(ctx.spinResult);
     // Все линии анимированы — отправляем событие
     actor.send({ type: 'ANIMATION_END' });
@@ -144,6 +148,15 @@ export function createUIController(actor, app) {
     actor.send({ type: 'SCATTER_ANIMATION_END' });
   });
 
+  soundManager.load();
+
+   // Кнопка звука
+  const initialMuted = soundManager.isMuted(); // читаем из localStorage
+  console.log('initialMuted ', initialMuted);
+  createSoundToggleButton(app, (muted) => {
+    soundManager.setMuted(muted);
+  }, initialMuted);
+  soundManager.playBg();
 
   return {
     destroy: () => {
