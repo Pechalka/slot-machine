@@ -1,7 +1,7 @@
 // server/findPositions.js
-const { getReels } = require('./reelsManager');
-const { buildMatrix } = require('./gameLogic');
-const { VISIBLE_SYMBOLS } = require('./config');
+const { getReels } = require('../reelsManager');
+const { buildMatrix } = require('../gameLogic');
+const { VISIBLE_SYMBOLS } = require('../config');
 
 // ===== КОНФИГУРАЦИЯ (меняй здесь!) =====
 // Массив условий: каждая строка требует, чтобы на указанной строке (row)

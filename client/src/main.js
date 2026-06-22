@@ -36,7 +36,9 @@ async function bootstrap() {
     if (event.code === 'Space') {
       event.preventDefault();
       const snapshot = actor.getSnapshot();
-      if (snapshot.matches('idle')) {
+      if (snapshot.matches('freeSpins.result')) {
+        actor.send({ type: 'CLOSE_RESULT' });
+      } else if (snapshot.matches('idle')) {
         actor.send({ type: 'SPIN' });
       }
     }
