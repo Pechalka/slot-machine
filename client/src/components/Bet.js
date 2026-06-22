@@ -1,9 +1,7 @@
 // components/Bet.js
 import { Graphics, Text } from 'pixi.js';
-import { onField, onState } from '../xstate-subscribers.js';
 
-// TODO: вернуться поже
-export function createBet(actor, app) {
+export function createBet(app, onChangeBet) {
   const container = new Graphics();
   const uiContainer = new Graphics();
 
@@ -18,32 +16,17 @@ export function createBet(actor, app) {
   text.position.set(0, 0);
   uiContainer.addChild(text);
 
+
   // Кнопка "-"
   const minusBtn = createButton('-', () => {
-    const state = actor.getSnapshot();
-    if (!state.matches('idle')) return;
-    const currentBet = state.context.bet;
-    const step = state.context.betStep || 1;
-    const minBet = state.context.minBet || 1;
-    const newBet = Math.max(currentBet - step, minBet);
-    if (newBet !== currentBet) {
-      actor.send({ type: 'CHANGE_BET', value: newBet });
-    }
+    onChangeBet(-1);
   });
   minusBtn.position.set(-100, 0);
   uiContainer.addChild(minusBtn);
 
   // Кнопка "+"
   const plusBtn = createButton('+', () => {
-    const state = actor.getSnapshot();
-    if (!state.matches('idle')) return;
-    const currentBet = state.context.bet;
-    const step = state.context.betStep || 1;
-    const maxBet = state.context.maxBet || 100;
-    const newBet = Math.min(currentBet + step, maxBet);
-    if (newBet !== currentBet) {
-      actor.send({ type: 'CHANGE_BET', value: newBet });
-    }
+    onChangeBet(1);
   });
   plusBtn.position.set(100, 0);
   uiContainer.addChild(plusBtn);
@@ -56,12 +39,11 @@ export function createBet(actor, app) {
     container.y = app.screen.height - 40;
   };
 
-  // Подписка на изменение ставки
-  onField(actor, 'bet', (ctx) => {
-    text.text = `Bet: ${ctx.bet}`;
-  });
+  const updateBet = (bet) => {
+    text.text = `Bet: ${bet}`;
+  }
 
-  // Блокировка кнопок
+    // Блокировка кнопок
   const setButtonsEnabled = (enabled) => {
     [minusBtn, plusBtn].forEach(btn => {
       btn.cursor = enabled ? 'pointer' : 'default';
@@ -69,17 +51,16 @@ export function createBet(actor, app) {
     });
   };
 
-  onState(actor, 'idle', () => setButtonsEnabled(true));
-  onState(actor, 'spinning', () => setButtonsEnabled(false));
-  onState(actor, 'winAnimation', () => setButtonsEnabled(false));
-  onState(actor, 'stoppingReels', () => setButtonsEnabled(false));
 
   // Ресайз
   app.renderer.on('resize', position);
   position();
 
   app.stage.addChild(container);
-  return container;
+  return {
+    setButtonsEnabled,
+    updateBet,
+  };
 }
 
 // Вспомогательная функция для создания кнопки

@@ -1,7 +1,6 @@
 import { Graphics, Text } from 'pixi.js';
-import { onState, subscribeFields } from '../xstate-subscribers.js';
 
-export function createSpinButton(actor, app) {
+export function createSpinButton(app, onSpin) {
   const radius = 45;
   const container = new Graphics();
 
@@ -43,27 +42,8 @@ export function createSpinButton(actor, app) {
     }
   };
 
-  // Изменяем внешний вид в зависимости от состояния
-  onState(actor, 'idle', ({ bet, balance }) => {
-    const validBet = balance >= bet;
-    setButtonsEnabled(validBet);
-  });
-
-  onState(actor, 'spinning', () => {
-    setButtonsEnabled(false)
-  });
-
-  subscribeFields(actor, ['bet', 'balance'], ({ bet, balance }) => {
-    if (actor.getSnapshot().matches('idle')) {
-      const validBet = balance >= bet;
-      setButtonsEnabled(validBet);
-    }
-  });
-
   container.on('pointertap', () => {
-    if (actor.getSnapshot().matches('idle')) {
-      actor.send({ type: 'SPIN' });
-    }
+    if (onSpin) onSpin();
   });
 
 
@@ -77,5 +57,7 @@ export function createSpinButton(actor, app) {
   onResize();
 
   app.stage.addChild(container);
-  return container;
+  return {
+    setButtonsEnabled,
+  };
 }

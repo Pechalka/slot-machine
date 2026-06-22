@@ -1,7 +1,6 @@
 import { Text } from 'pixi.js';
-import { subscribeStates } from '../xstate-subscribers.js';
 
-export function createWinDisplay(actor, app) {
+export function createWinDisplay(app) {
   const text = new Text('', {
     fontSize: 48,
     fill: 0xFFD700,
@@ -16,7 +15,7 @@ export function createWinDisplay(actor, app) {
   });
   text.anchor.set(0.5);
 
-  // Позиция: центр по горизонтали, отступ от низа 120px
+  // Позиция: центр по горизонтали, отступ от низа
   const position = () => {
     text.x = app.screen.width / 2;
     text.y = app.screen.height - 40;
@@ -26,21 +25,20 @@ export function createWinDisplay(actor, app) {
   text.visible = false;
   app.stage.addChild(text);
 
-  subscribeStates(actor, ['winAnimation', 'freeSpins.win'], (ctx) => {
-    const winAmount = ctx.spinResult?.win || 0;
-    if (winAmount > 0) {
-      text.text = `🎉 +${winAmount}`;
-      text.visible = true;
-    } else {
-      text.visible = false;
-    }
-  });
+  const show = (winAmount) => {
+    text.text = `🎉 +${winAmount}`;
+    text.visible = true;
+  }
 
-  subscribeStates(actor, ['idle', 'freeSpins.spinning'], () => {
+  const hide = () => {
     text.visible = false;
-  });
+  }
+
 
   app.renderer.on('resize', position);
 
-  return text;
+  return {
+    show,
+    hide
+  };
 }

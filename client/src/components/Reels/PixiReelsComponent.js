@@ -4,8 +4,6 @@ import { symbolRegistry } from '../../symbolsLoader.js';
 import { createEmojiTexture } from '../../utils.js';
 import { SpineReelSymbol } from 'pixi-reels/spine';
 
-import { onField, subscribeStates } from '../../xstate-subscribers.js';
-
 class EmojiSpriteSymbol extends SpriteSymbol {
   constructor(opts) {
     super(opts);
@@ -28,11 +26,23 @@ class EmojiSpriteSymbol extends SpriteSymbol {
   }
 }
 
-export function createReelsComponent(actor, app) {
-  let unsubscribers = [];
+function matrixToReelResult(matrix) {
+  // matrix — массив строк (3 строки × 5 столбцов)
+  const cols = matrix[0].length; // 5
+  const result = [];
+  for (let col = 0; col < cols; col++) {
+    const visible = matrix.map((row) => row[col]); // берём символ из каждой строки для этого столбца
+    result.push({ visible });
+  }
+  return result;
+}
+
+export function createReelsComponent(app, onReelStopped) {
   let reelSet = null;
 
   function createReels(config) {
+    if (reelSet) return;
+
     const SYMBOLS = Object.keys(config.symbolWeights);
     reelSet = new ReelSetBuilder()
       .reels(5) // 5 барабанов
@@ -112,106 +122,71 @@ export function createReelsComponent(actor, app) {
 
     reelSet.events.on('spin:reelLanded', (i, symbols) => {
       console.log('reel', i, 'landed on', symbols);
-      actor.send({ type: 'REEL_STOPPED' });
+      if (onReelStopped) onReelStopped(i, symbols);
     });
   }
 
-  function matrixToReelResult(matrix) {
-    // matrix — массив строк (3 строки × 5 столбцов)
-    const cols = matrix[0].length; // 5
-    const result = [];
-    for (let col = 0; col < cols; col++) {
-      const visible = matrix.map((row) => row[col]); // берём символ из каждой строки для этого столбца
-      result.push({ visible });
+  const spin = () => {
+    reelSet.spin();
+  };
+
+  const setResult = (spinResult) => {
+    const formatted = matrixToReelResult(spinResult.matrix);
+    reelSet.setResult(formatted);
+  };
+
+  const showWinAnimation = async (spinResult) => {
+    if (spinResult?.winningLines) {
+      // Проходим по каждой линии последовательно
+      for (const line of spinResult.winningLines) {
+        // Собираем промисы для всех позиций в этой линии
+        const linePromises = line.positions.map(([row, col]) => {
+          const reel = reelSet.reels[col];
+          const symbol = reel.getSymbolAt(row);
+          symbol.playWin();
+        });
+        // Ждём завершения анимации для всех позиций в этой линии
+        await Promise.all(linePromises);
+        // Небольшая задержка между линиями (опционально, например, 300 мс)
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
     }
-    return result;
-  }
-
-  function setupSubscriptions() {
-    unsubscribers.push(
-      onField(actor, 'config', (ctx) => {
-        if (ctx.config && !reelSet) {
-          createReels(ctx.config);
-        }
-      })
-    );
-
-    unsubscribers.push(
-      subscribeStates(actor, ['spinning', 'freeSpins.spinning'], () => {
-        reelSet.spin();
-      })
-    );
-
-    unsubscribers.push(
-      subscribeStates(actor, ['stoppingReels', 'freeSpins.stopping'], (ctx) => {
-        const formatted = matrixToReelResult(ctx.spinResult.matrix);
-        reelSet.setResult(formatted);
-      })
-    );
-
-    unsubscribers.push(
-      subscribeStates(actor, ['freeSpins.win', 'winAnimation'], async (ctx) => {
-        if (ctx.spinResult?.winningLines) {
-          // Проходим по каждой линии последовательно
-          for (const line of ctx.spinResult.winningLines) {
-            // Собираем промисы для всех позиций в этой линии
-            const linePromises = line.positions.map(([row, col]) => {
-              const reel = reelSet.reels[col];
-              const symbol = reel.getSymbolAt(row);
-              symbol.playWin();
-            });
-            // Ждём завершения анимации для всех позиций в этой линии
-            await Promise.all(linePromises);
-            // Небольшая задержка между линиями (опционально, например, 300 мс)
-            await new Promise((resolve) => setTimeout(resolve, 300));
-          }
-        }
-        // Все линии анимированы — отправляем событие
-        actor.send({ type: 'ANIMATION_END' });
-      })
-    );
-
-    unsubscribers.push(
-      subscribeStates(actor, ['freeSpins.scatterActivation', 'scatterActivation'], async (ctx) => {
-        // Находим все позиции Scatter в матрице
-        const scatterPositions = [];
-        const matrix = ctx.spinResult?.matrix;
-        if (matrix) {
-          for (let row = 0; row < matrix.length; row++) {
-            for (let col = 0; col < matrix[row].length; col++) {
-              const symbol = matrix[row][col];
-              // Scatter — это S (или M, если добавишь)
-              if (symbol === 'S' || symbol === 'M') {
-                scatterPositions.push([row, col]);
-              }
-            }
-          }
-        }
-
-        if (scatterPositions.length > 0) {
-          // Анимируем все Scatter-символы (можно как win-анимацию)
-          const promises = scatterPositions.map(([row, col]) => {
-            // // Используем ту же анимацию, что и для выигрыша (или отдельную)
-            const reel = reelSet.reels[col];
-            const symbol = reel.getSymbolAt(row);
-            return symbol.playWin();
-          });
-          await Promise.all(promises);
-          await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-
-        // Завершаем анимацию Scatter и переходим к фриспинам
-        actor.send({ type: 'SCATTER_ANIMATION_END' });
-      })
-    );
-  }
-  const init = () => {
-    setupSubscriptions();
   };
 
-  const destroy = () => {
-    unsubscribers.forEach((unsub) => unsub.unsubscribe?.());
+  const showScaterAnimation = async (spinResult) => {
+    // Находим все позиции Scatter в матрице
+    const scatterPositions = [];
+    const matrix = spinResult?.matrix;
+    if (matrix) {
+      for (let row = 0; row < matrix.length; row++) {
+        for (let col = 0; col < matrix[row].length; col++) {
+          const symbol = matrix[row][col];
+          // Scatter — это S (или M, если добавишь)
+          if (symbol === 'S' || symbol === 'M') {
+            scatterPositions.push([row, col]);
+          }
+        }
+      }
+    }
+
+    if (scatterPositions.length > 0) {
+      // Анимируем все Scatter-символы (можно как win-анимацию)
+      const promises = scatterPositions.map(([row, col]) => {
+        // // Используем ту же анимацию, что и для выигрыша (или отдельную)
+        const reel = reelSet.reels[col];
+        const symbol = reel.getSymbolAt(row);
+        return symbol.playWin();
+      });
+      await Promise.all(promises);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
   };
 
-  return { init, destroy };
+  return {
+    createReels,
+    spin,
+    setResult,
+    showWinAnimation,
+    showScaterAnimation
+  };
 }

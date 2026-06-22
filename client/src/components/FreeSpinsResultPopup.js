@@ -1,6 +1,6 @@
 import { Graphics, Text, Container } from 'pixi.js';
 
-export function createFreeSpinsResultPopup(actor, app) {
+export function createFreeSpinsResultPopup(app, onCloseResultPopup) {
   const container = new Container();
   container.visible = false;
   container.zIndex = 1000;
@@ -61,7 +61,7 @@ export function createFreeSpinsResultPopup(actor, app) {
 
   btnBg.on('pointertap', () => {
     container.visible = false;
-    actor.send({ type: 'CLOSE_RESULT' });
+    if (onCloseResultPopup) onCloseResultPopup();
   });
 
   // Центрирование

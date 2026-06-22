@@ -1,10 +1,9 @@
 import { Text } from 'pixi.js';
-import { onState, onField } from '../xstate-subscribers.js';
 
-export function createFreeSpinsCounter(actor, app) {
+export function createFreeSpinsCounter(app) {
   const text = new Text('Free Spins: 0', {
     fontSize: 32,
-    fill: 0xFFD700,
+    fill: 0xffd700,
     fontFamily: 'Arial',
     fontWeight: 'bold',
     stroke: 0x000000,
@@ -23,12 +22,9 @@ export function createFreeSpinsCounter(actor, app) {
   };
   position();
 
-const showCounter = () => {
-    const ctx = actor.getSnapshot().context;
-    if (ctx.freeSpinsLeft > 0) {
-      text.visible = true;
-      text.text = `Free Spins: ${ctx.freeSpinsLeft}`;
-    }
+  const showCounter = (freeSpinsLeft) => {
+    text.visible = true;
+    text.text = `Free Spins: ${freeSpinsLeft}`;
   };
 
   // Скрываем счётчик в состояниях, где фриспины не активны
@@ -36,20 +32,20 @@ const showCounter = () => {
     text.visible = false;
   };
 
-  // Подписки на состояния
-  onState(actor, 'freeSpins.spinning', showCounter);
-  onState(actor, 'freeSpins.result', hideCounter);
-  onState(actor, 'idle', hideCounter);
-
-  // Обновление счётчика при изменении freeSpinsLeft (только если видим)
-  onField(actor, 'freeSpinsLeft', (ctx) => {
+  const updateValue = (freeSpinsLeft) => {
+    text.text = `Free Spins: ${freeSpinsLeft}`;
     if (text.visible) {
-      text.text = `Free Spins: ${ctx.freeSpinsLeft}`;
+      text.text = `Free Spins: ${freeSpinsLeft}`;
     }
-  });
+  };
+
 
   app.renderer.on('resize', position);
   app.stage.addChild(text);
 
-  return text;
+  return {
+    hideCounter,
+    showCounter,
+    updateValue,
+  };
 }

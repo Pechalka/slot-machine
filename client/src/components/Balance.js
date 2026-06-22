@@ -19,8 +19,7 @@ export function createBalance(actor, app) {
   let lastBalance = null;
   let blinkInterval = null;
 
-  onField(actor, 'balance', (ctx) => {
-    const newBalance = ctx.balance;
+  const updateBalance = (newBalance) => {
     if (lastBalance !== null && newBalance !== lastBalance) {
       // Очищаем предыдущий интервал, если он есть
       if (blinkInterval) {
@@ -45,7 +44,7 @@ export function createBalance(actor, app) {
     }
     text.text = `${newBalance}`;
     lastBalance = newBalance;
-  });
+  }
 
   const onResize = () => {
     position();
@@ -54,5 +53,7 @@ export function createBalance(actor, app) {
   onResize();
 
   app.stage.addChild(text);
-  return text;
+  return {
+    updateBalance,
+  };
 }
